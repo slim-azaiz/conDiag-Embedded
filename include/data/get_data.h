@@ -2,8 +2,9 @@
 #define GET_DATA_H
 
 #include <string.h>
-//#include "dbus/dbus.h"
-//#include "sc_bus.h"
+#include <stdlib.h>
+#include "dbus/dbus.h"
+#include "sc_bus.h"
 #include <stdio.h>
 
 /*Get data results */
@@ -81,16 +82,20 @@
 
 #define MAX_MW_PARAM_SIZE							128
 
-typedef struct get_data
+
+typedef struct Get_data
 {
 	char* method;
-}get_data;
+
+}Get_data;
+
+ 
+ 
+
 void create_get_data();
 void destroy_get_data();
-void set_method(char* method);
-char* get_method_value_by_string();
-char* get_method_value_by_array(int length);
-
-
-
+void set_method(Get_data *data,char* method);
+char* get_method(Get_data *data);
+char* get_method_value_by_string(char* method);
+char* get_method_value_by_array(char* method,int length);
 #endif //GET_DATA_H

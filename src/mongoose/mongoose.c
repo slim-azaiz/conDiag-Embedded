@@ -1,4 +1,4 @@
-#include "mongoose.h"
+#include "../../include/mongoose/mongoose.h"
 #ifdef MG_MODULE_LINES
 #line 1 "mongoose/src/internal.h"
 #endif
