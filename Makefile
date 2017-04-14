@@ -3,7 +3,7 @@ CC=$(CROSS_COMPILE)-gcc
 
 DESTDIR=$(TOOLROOT)/../dev-arm/tivo_root/bin/
 TR69= $(SANDBOX)/../sdt_sagemcom/TR69
-CFLAGS += -g -W -Wall -Wextra -fPIC -rdynamic  
+CFLAGS += -g -W -Wall -Wextra -fPIC -rdynamic 
 CFLAGS += -I$(TR69)/dbus 
 CFLAGS += -I$(TR69)/sc-bus/include 
 

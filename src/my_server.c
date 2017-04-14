@@ -1,33 +1,109 @@
 // Copyright (c) 2017 AZAIZ SLIM
 // All rights reserved
 
-
 #include "../include/data/all_parametres.h"
 #include "../include/mongoose/mongoose.h"
+#include "../include/cjson/cJSON.h"
 
 #include "string.h"
 #include <stdio.h>
-#include "../include/cjson/cJSON.h"
-
-typedef struct Auth{
-char* username;
-char* password;
-}Auth;
 
 #define USERNAME "root"
 #define PASSWORD "root"
 
-char * usr="";
-char * pass="";
+typedef struct Auth{
+    char* username;
+    char* password;
+}Auth;
 
+typedef struct NewOldPass{
+    char* oldPass;
+    char* newPass;
+}NewOldPass;
+
+static All_parametres *all_parametres;
+
+char* usr="";
+char* pass="";
+char* oldPass="";
+char* newPass="";
+
+char* finalPass="";
+char* finalUser="";
 cJSON *objects[1];
 
-void parseUsernamePassword(char* string){  
+static const char* s_http_port = "8000";
+static struct mg_serve_http_opts s_http_server_opts;
+
+
+
+int modifyPass(char* password){
+    FILE * ptrFile;
+    
+    ptrFile=fopen("/MY_PASSWD","w+");
+    if (NULL==ptrFile) {
+		printf("Corrupted file \n");
+		return -1;
+	}
+    
+    fprintf(ptrFile,"%s",password);
+    
+    fclose(ptrFile);
+    return 1;
+}
+int readUsername(){
+    FILE * ptrFile;
+    char line[40];
+	int cur_line = 0;
+    finalUser =""; 
+    ptrFile=fopen("/MY_PASSWD","r");
+    if (NULL==ptrFile) {
+		printf("Corrupted file \n");
+		return -1;
+	}
+    while(fgets(line,31,ptrFile)!= NULL ) /* read a line */
+    {
+        if (cur_line == 0) {
+           // line[strlen(line)-1] = '\0';
+              finalUser = line;
+              printf(" finalUser=%s \n", finalUser);
+           //  sprintf(finalPass,"%s",line);
+        }
+        cur_line++;
+    }
+    fclose(ptrFile);
+    return 1;
+}
+int readPassword(){
+    FILE * ptrFile;
+    char line[40];
+	int cur_line = 0;
+    finalPass =""; 
+    ptrFile=fopen("/MY_PASSWD","r");
+    if (NULL==ptrFile) {
+		printf("Corrupted file \n");
+		return -1;
+	}
+    while(fgets(line,31,ptrFile)!= NULL ) /* read a line */
+    {
+        if (cur_line == 1) {
+           // line[strlen(line)-1] = '\0';
+              finalPass = line;
+              printf(" finalPass=%s \n", finalPass);
+           //  sprintf(finalPass,"%s",line);
+        }
+        cur_line++;
+    }
+    fclose(ptrFile);
+    return 1;
+}
+
+void parseUsernamePassword(char* string){
     Auth *auth = malloc(sizeof(Auth));
     usr="";
     pass="";
-    char *search = "/";
-    char *str = "";
+    char* search = "/";
+    char* str = "";
     str = strtok(string,search);
     str = strtok(NULL,search);
     auth->username = str;
@@ -37,31 +113,116 @@ void parseUsernamePassword(char* string){
       usr = auth->username;
     if(auth->password!=NULL)
       pass = auth->password;
-    printf("%s\n", usr);
-    printf("%s\n",pass );
     free(auth);
 }
 
 
-int authentificate(char *string ){
+int authentificate(char* string ){
   parseUsernamePassword(string);
-    if((strcmp(usr,USERNAME))||(strcmp(pass,PASSWORD)))
+  FILE * ptrFile;
+  char line[40];
+  int cur_line = 0;
+  ptrFile=fopen("/MY_PASSWD","r");
+ if (NULL==ptrFile) {
+      printf("Corrupted file \n");
+      return -1;
+  }
+  while(fgets(line,31,ptrFile)!= NULL ) /* read a line */
+  {
+      if (cur_line == 0) {
+          // line[strlen(line)-1] = '\0';
+           finalPass = line;
+           printf(" finalPass=%s \n", finalPass);
+           //  sprintf(finalPass,"%s",line);
+             }
+        cur_line++;
+  }
+  fclose(ptrFile);
+    if((strcmp(usr,USERNAME))||(strcmp(pass,finalPass)))
         return 0 ;
       else
         return -1;
 }
 
-char * mg_str2pTEXT(struct mg_str *mgstr)
+void parseNewOldPassword(char* string){  
+    NewOldPass *newOldPass = malloc(sizeof(NewOldPass));
+    oldPass="";
+    newPass="";
+
+    char* search = "/";
+    char* str = "";
+    str = strtok(string,search);
+    str = strtok(NULL,search);
+    newOldPass->oldPass = str;
+    str = strtok(NULL,search);
+    newOldPass->newPass = str;
+    if(newOldPass->oldPass!=NULL)
+      oldPass = newOldPass->oldPass;
+    if(newOldPass->newPass!=NULL)
+      newPass = newOldPass->newPass;
+    free(newOldPass);
+}
+
+int resetPassword(char* string ){
+  parseNewOldPassword(string);
+  printf("finalPassBefore=%s\n",finalPass);
+  FILE * ptrFile;
+  char line[40];
+  int cur_line = 0;
+  ptrFile=fopen("/MY_PASSWD","r");
+ if (NULL==ptrFile) {
+      printf("Corrupted file \n");
+      return -1;
+  }
+  while(fgets(line,31,ptrFile)!= NULL ) /* read a line */
+  {
+      if (cur_line == 0) {
+          // line[strlen(line)-1] = '\0';
+           finalPass = line;
+           printf(" finalPass=%s \n", finalPass);
+           //  sprintf(finalPass,"%s",line);
+             }
+        cur_line++;
+  }
+  fclose(ptrFile);
+  printf("finalPassBefore=%s\n",finalPass);
+  printf("oldPass=%s\n",oldPass);
+  printf("newPass=%s\n",newPass);
+  printf("oldPass=%d\n",strlen(oldPass));
+  printf("finalPass=%d\n",strlen(finalPass));
+  
+  if((!strcmp(oldPass,finalPass))){
+     // free(finalPass);
+    printf("WHY\n");  
+    FILE * ptrFile;
+    
+    ptrFile=fopen("/MY_PASSWD","w+");
+    if (NULL==ptrFile) {
+		printf("Corrupted file \n");
+		return -1;
+	}
+    
+    fprintf(ptrFile,"%s",newPass);
+    fclose(ptrFile);
+    printf("finalPasAfetr=%s\n",finalPass);  
+    return 0 ;
+  } else{
+      printf("ERROR\n");
+     // free(finalUser); 
+      return -1;
+    }
+}
+
+
+char* mg_str2pTEXT(struct mg_str *mgstr)
 {
-    char * text = (char *) malloc(mgstr->len + 1);
+    char* text = (char*) malloc(mgstr->len + 1);
     strncpy(text, mgstr->p, mgstr->len);
     text[mgstr->len] = '\0';
     return text;
 }
 
 
-static const char *s_http_port = "8000";
-static struct mg_serve_http_opts s_http_server_opts;
 
 static void ev_handler(struct mg_connection *nc, int ev, void *p) {
   struct http_message *hm = (struct http_message *) p;
@@ -71,19 +232,32 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
     if (strstr(mg_str2pTEXT(&hm->uri),"/authentificate")) {
       if(authentificate(mg_str2pTEXT(&hm->uri))){
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        printf("%s\nsuccess\n",mg_str2pTEXT(&hm->uri));
         mg_printf_http_chunk(nc, "SUCCESS");
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       } else {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        printf("%s\nERROR\n",mg_str2pTEXT(&hm->uri));
         mg_printf_http_chunk(nc, "WRONG USERNAME OR PASSWORD");
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       }
     }
+    //rresetPassword(mg_str2pTEXT(&hm->uri)eset password
+    else if (strstr(mg_str2pTEXT(&hm->uri),"/resetPassword")) {
+      if(!resetPassword(mg_str2pTEXT(&hm->uri))){
+      
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        mg_printf_http_chunk(nc, "SUCCESS");
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      } else {
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        mg_printf_http_chunk(nc, "WRONG OLD PASSWORD");
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      }
+    }
     //diagnostic
-    else if (strstr(mg_str2pTEXT(&hm->uri),"diag")) {
+    else if (strstr(mg_str2pTEXT(&hm->uri),"diagnostic")) {
         //all parametres
-        All_parametres *all_parametres = malloc(sizeof(All_parametres));
-        create_all_parametres(all_parametres);
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
        
 
@@ -192,13 +366,200 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         cJSON_AddStringToObject(objects[37], "parameter","STB_totalPowerOff");
         cJSON_AddStringToObject(objects[38], "parameter","Time_since_last_STB_boot_up");
         cJSON_AddStringToObject(objects[39], "parameter","Total_STB_Reboot");
-        char *result = cJSON_Print(root);
+        char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"diagnostics\":%s}\n",result);
 
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-        free(all_parametres);
-      }
-    mg_serve_http(nc, (struct http_message *) p, s_http_server_opts);
+      }else if (strstr(mg_str2pTEXT(&hm->uri),"identification")) {
+        //all parametres
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //json
+        int i;
+        cJSON *root = cJSON_CreateArray();
+        for (i = 0; i < 8; i++){
+            cJSON_AddItemToArray(root ,objects[i] = cJSON_CreateObject()); 
+        }
+        //VALUE
+        //stb_identification      
+        cJSON_AddStringToObject(objects[0], "value",all_parametres->serial_number);
+        cJSON_AddStringToObject(objects[1], "value",all_parametres->nagra_serial_number);
+        cJSON_AddStringToObject(objects[2], "value",all_parametres->model);
+        cJSON_AddStringToObject(objects[3], "value",all_parametres->stb_mac_address);
+        cJSON_AddStringToObject(objects[4], "value",all_parametres->ethernet_mac_address);
+        cJSON_AddStringToObject(objects[5], "value",all_parametres->firmware_version);
+        cJSON_AddStringToObject(objects[6], "value",all_parametres->network_id);
+        cJSON_AddStringToObject(objects[7], "value",all_parametres->manufacturer);
+        //parameter
+        cJSON_AddStringToObject(objects[0], "parameter","serial_number");
+        cJSON_AddStringToObject(objects[1], "parameter","nagra_serial_number");
+        cJSON_AddStringToObject(objects[2], "parameter","model");
+        cJSON_AddStringToObject(objects[3], "parameter","stb_mac_address");
+        cJSON_AddStringToObject(objects[4], "parameter","ethernet_mac_address");
+        cJSON_AddStringToObject(objects[5], "parameter","firmware_version");
+        cJSON_AddStringToObject(objects[6], "parameter","network_id");
+        cJSON_AddStringToObject(objects[7], "parameter","manufacturer");
+       
+        char* result = cJSON_Print(root);
+        mg_printf_http_chunk(nc, "{\"identification\":%s}\n",result);
+
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      }else if (strstr(mg_str2pTEXT(&hm->uri),"conditionalAccess")) {
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //json
+        int i;
+        cJSON *root = cJSON_CreateArray();
+        for (i = 0; i < 2; i++){
+            cJSON_AddItemToArray(root ,objects[i] = cJSON_CreateObject()); 
+        }
+        //VALUE
+        //conditional_access
+        cJSON_AddStringToObject(objects[0], "value",all_parametres->Nagra_Serial_Number);
+        cJSON_AddStringToObject(objects[1], "value",all_parametres->CA_Provider_Name);
+        //parameter
+        cJSON_AddStringToObject(objects[0], "parameter","Nagra_Serial_Number");
+        cJSON_AddStringToObject(objects[1], "parameter","CA_Provider_Name");
+        char* result = cJSON_Print(root);
+        mg_printf_http_chunk(nc, "{\"conditional\":%s}\n",result);
+
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      }else if (strstr(mg_str2pTEXT(&hm->uri),"memory")) {
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //json
+        int i;
+        cJSON *root = cJSON_CreateArray();
+        for (i = 0; i < 4; i++){
+            cJSON_AddItemToArray(root ,objects[i] = cJSON_CreateObject()); 
+        }
+        //VALUE
+        //memoire_data
+        cJSON_AddStringToObject(objects[0], "value",all_parametres->memory_block_status);
+        cJSON_AddStringToObject(objects[1], "value",all_parametres->used_memory);
+        cJSON_AddStringToObject(objects[2], "value",all_parametres->total_memory);
+        cJSON_AddStringToObject(objects[3], "value",all_parametres->addressing_memory);
+        //parameter
+        cJSON_AddStringToObject(objects[0], "parameter","memory_block_status");
+        cJSON_AddStringToObject(objects[1], "parameter","used_memory");
+        cJSON_AddStringToObject(objects[2], "parameter","total_memory");
+        cJSON_AddStringToObject(objects[3], "parameter","addressing_memory");
+        char* result = cJSON_Print(root);
+        mg_printf_http_chunk(nc, "{\"memory\":%s}\n",result);
+
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+
+      }else if (strstr(mg_str2pTEXT(&hm->uri),"loader")) {
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //json
+        int i;
+        cJSON *root = cJSON_CreateArray();
+        for (i = 0; i < 2; i++){
+            cJSON_AddItemToArray(root ,objects[i] = cJSON_CreateObject()); 
+        }
+        //VALUE
+        //loader_data
+        cJSON_AddStringToObject(objects[0], "value",all_parametres->boot_loader_version);
+        cJSON_AddStringToObject(objects[1], "value",all_parametres->boot_loader_crc);
+        //parameter
+        cJSON_AddStringToObject(objects[0], "parameter","boot_loader_version");
+        cJSON_AddStringToObject(objects[1], "parameter","boot_loader_crc");
+        char* result = cJSON_Print(root);
+        mg_printf_http_chunk(nc, "{\"loader\":%s}\n",result);
+
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      }else if (strstr(mg_str2pTEXT(&hm->uri),"software")) {
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //json
+        int i;
+        cJSON *root = cJSON_CreateArray();
+        for (i = 0; i < 3; i++){
+            cJSON_AddItemToArray(root ,objects[i] = cJSON_CreateObject()); 
+        }
+        //VALUE
+        //software_data
+        cJSON_AddStringToObject(objects[0], "value",all_parametres->tivo_software_name);
+        cJSON_AddStringToObject(objects[1], "value",all_parametres->date_time_last_stb_software);
+        cJSON_AddStringToObject(objects[2], "value",all_parametres->total_software_updates);
+        //parameter
+        cJSON_AddStringToObject(objects[0], "parameter","tivo_software_name");
+        cJSON_AddStringToObject(objects[1], "parameter","date_time_last_stb_software");
+        cJSON_AddStringToObject(objects[2], "parameter","total_software_updates");
+        char* result = cJSON_Print(root);
+        mg_printf_http_chunk(nc, "{\"software\":%s}\n",result);
+
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      }else if (strstr(mg_str2pTEXT(&hm->uri),"network")) {
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //json
+        int i;
+        cJSON *root = cJSON_CreateArray();
+        for (i = 0; i < 8; i++){
+            cJSON_AddItemToArray(root ,objects[i] = cJSON_CreateObject()); 
+        }
+        //VALUE
+        //network_data
+        cJSON_AddStringToObject(objects[0], "value",all_parametres->stb_serial_number);
+        cJSON_AddStringToObject(objects[1], "value",all_parametres->manufacturer);
+        cJSON_AddStringToObject(objects[2], "value",all_parametres->stb_ip_address);
+        cJSON_AddStringToObject(objects[3], "value",all_parametres->stb_mac_ethernet);
+        cJSON_AddStringToObject(objects[4], "value",all_parametres->stb_ethernet_port_status);
+        cJSON_AddStringToObject(objects[5], "value",all_parametres->dns_serverII);
+        cJSON_AddStringToObject(objects[6], "value",all_parametres->stb_ip_default_gateway);
+        cJSON_AddStringToObject(objects[7], "value",all_parametres->stb_subnet_mask);
+        //parameter      
+        cJSON_AddStringToObject(objects[0],  "parameter","stb_serial_number");
+        cJSON_AddStringToObject(objects[1],  "parameter","manufacturer");
+        cJSON_AddStringToObject(objects[2],  "parameter","stb_ip_address");
+        cJSON_AddStringToObject(objects[3],  "parameter","stb_mac_ethernet");
+        cJSON_AddStringToObject(objects[4],  "parameter","stb_ethernet_port_status");
+        cJSON_AddStringToObject(objects[5],  "parameter","dns_serverII");
+        cJSON_AddStringToObject(objects[6],  "parameter","stb_ip_default_gateway");
+        cJSON_AddStringToObject(objects[7],  "parameter","stb_subnet_mask");
+        char* result = cJSON_Print(root);
+        mg_printf_http_chunk(nc, "{\"network\":%s}\n",result);
+                                       
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      }else if (strstr(mg_str2pTEXT(&hm->uri),"sysInfo")) {
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //json
+        int i;
+        cJSON *root = cJSON_CreateArray();
+        for (i = 0; i < 13; i++){
+            cJSON_AddItemToArray(root ,objects[i] = cJSON_CreateObject()); 
+        }
+        //VALUE
+        //sys_info 
+        cJSON_AddStringToObject(objects[0], "value",all_parametres->IR_Input_Status);
+        cJSON_AddStringToObject(objects[1], "value",all_parametres->Internal_Temperature);
+        cJSON_AddStringToObject(objects[2], "value",all_parametres->CPU_Utilisation);
+        cJSON_AddStringToObject(objects[3], "value",all_parametres->HDMI_Port_Status);
+        cJSON_AddStringToObject(objects[4], "value",all_parametres->Video_Resolution);
+        cJSON_AddStringToObject(objects[5], "value",all_parametres->Video_Aspect_Ratio);
+        cJSON_AddStringToObject(objects[6], "value",all_parametres->Video_Format);
+        cJSON_AddStringToObject(objects[7], "value",all_parametres->Diagnostics_Pages_Language);
+        cJSON_AddStringToObject(objects[8], "value",all_parametres->Audio_Setup);
+        cJSON_AddStringToObject(objects[9], "value",all_parametres->STB_Lifetime);
+        cJSON_AddStringToObject(objects[10], "value",all_parametres->STB_totalPowerOff);
+        cJSON_AddStringToObject(objects[11], "value",all_parametres->Time_since_last_STB_boot_up);
+        cJSON_AddStringToObject(objects[12], "value",all_parametres->Total_STB_Reboot);
+       //parameter
+        cJSON_AddStringToObject(objects[0],  "parameter","IR_Input_Status");
+        cJSON_AddStringToObject(objects[1],  "parameter","Internal_Temperature");
+        cJSON_AddStringToObject(objects[2],  "parameter","CPU_Utilisation");
+        cJSON_AddStringToObject(objects[3],  "parameter","HDMI_Port_Status");
+        cJSON_AddStringToObject(objects[4],  "parameter","Video_Resolution");
+        cJSON_AddStringToObject(objects[5],  "parameter","Video_Aspect_Ratio");
+        cJSON_AddStringToObject(objects[6],  "parameter","Video_Format");
+        cJSON_AddStringToObject(objects[7],  "parameter","Diagnostics_Pages_Language");
+        cJSON_AddStringToObject(objects[8],  "parameter","Audio_Setup");
+        cJSON_AddStringToObject(objects[9],  "parameter","STB_Lifetime");
+        cJSON_AddStringToObject(objects[10], "parameter","STB_totalPowerOff");
+        cJSON_AddStringToObject(objects[11], "parameter","Time_since_last_STB_boot_up");
+        cJSON_AddStringToObject(objects[12], "parameter","Total_STB_Reboot");
+        char* result = cJSON_Print(root);
+        mg_printf_http_chunk(nc, "{\"sysInfo\":%s}\n",result);
+
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      }        
+       mg_serve_http(nc, (struct http_message *) p, s_http_server_opts);
   }
 }
 
@@ -207,6 +568,9 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 int main(void) {
   struct mg_mgr mgr;
   struct mg_connection *nc;
+  
+  all_parametres = malloc(sizeof(All_parametres));
+  create_all_parametres(all_parametres);
 
   mg_mgr_init(&mgr, NULL);
   printf("Starting web server on port %s\n", s_http_port);
