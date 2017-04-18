@@ -17,7 +17,7 @@
 /* STB Identification parameters */
 #define SERIAL_NUMBER								"getSerialNumber"
 #define NAGRA_SERIAL_NUMBER							"get_STU_Number"
-#define MODEL										"VELASQUEZ"
+#define MODEL										"get_model"
 #define STB_MAC_ADDRESS								"getMACAddress_Diagnostic"
 #define ETHERNET_MAC_ADDRESS						"getMACAddress_Diagnostic"
 #define STB_MANUFACTURING_DATE						"TBD"
@@ -43,7 +43,7 @@
 #define STB_IP_DEFAULT_GATEWAY 						"getDefaultGateway"
 #define STB_MAC_ADDRESS 							"getMACAddress_Diagnostic"
 #define FIRMWARE_VERSION 							"get_SW_version"
-#define STB_ETHERNET_PORT_STATUS 					"TBD"
+#define STB_ETHERNET_PORT_STATUS 					"GetEthernetportstate"
 #define ETHERNET_MAC_ADDRESS 						"getMACAddress_Diagnostic"
 #define TV_MANUFACTURER_MODEL 						"TBD"
 #define STB_IP_ADDRESS 								"getIpAddress"
@@ -52,13 +52,13 @@
 
 /* Conditional_access parameters */
  #define NAGRA_SERIAL_NUMBER						"get_STU_Number"
- #define CA_PROVIDER_NAME                           "Nagravision"
+ #define CA_PROVIDER_NAME                           "get_ca_provider_name"
  
 /*Systeme_info parameters*/
  #define IR_INPUT_STATUS							"TBD"
  #define INTERNAL_TEMPERATURE						"getThermalManagement"
- #define CPU_UTILISATION							"TBD"
- #define HDMI_PORT_STATUS							"TBD"
+ #define CPU_UTILISATION							"get_cpu_utilization"
+ #define HDMI_PORT_STATUS							"getHdmiConnectionStatus"
  #define VIDEO_RESOLUTION							"TBD"
  #define VIDEO_ASPECT_RATIO							"TBD"
  #define VIDEO_FORMAT								"TBD"
@@ -77,8 +77,8 @@
  /*Memory Map*/
 #define ADDRESSING_MEMORY							"TBD"
 #define MEMORY_BLOCK_STATUS							"TBD"
-#define USED_MEMORY									"TBD"
-#define TOTAL_MEMORY								"TBD"
+#define USED_MEMORY									"get_used_memory"
+#define TOTAL_MEMORY								"get_total_memory"
 
 #define MAX_MW_PARAM_SIZE							128
 

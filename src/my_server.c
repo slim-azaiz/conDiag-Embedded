@@ -27,7 +27,7 @@ char* usr="";
 char* pass="";
 char* oldPass="";
 char* newPass="";
-
+char* cmd="";
 char* finalPass="";
 char* finalUser="";
 cJSON *objects[1];
@@ -96,6 +96,18 @@ int readPassword(){
     }
     fclose(ptrFile);
     return 1;
+}
+//parse command
+int parseCommand(char* string){
+    usr="";
+    pass="";
+    cmd="";
+    char* search = "/";
+    char* str = "";
+    str = strtok(string,search);
+    str = strtok(NULL,search);
+    cmd = str;
+    return 0;
 }
 
 void parseUsernamePassword(char* string){
@@ -242,7 +254,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       }
     }
-    //rresetPassword(mg_str2pTEXT(&hm->uri)eset password
+    //resetPassword
     else if (strstr(mg_str2pTEXT(&hm->uri),"/resetPassword")) {
       if(!resetPassword(mg_str2pTEXT(&hm->uri))){
       
@@ -252,6 +264,20 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
       } else {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         mg_printf_http_chunk(nc, "WRONG OLD PASSWORD");
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      }
+    }
+    //control
+    else if (strstr(mg_str2pTEXT(&hm->uri),"/control")) {
+      if(!parseCommand(mg_str2pTEXT(&hm->uri))){
+        //execute command
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        mg_printf_http_chunk(nc, "%s CLICKED",cmd);
+        printf("\n%s ",mg_str2pTEXT(&hm->uri));
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      } else {
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        mg_printf_http_chunk(nc, "WRONG COMMAND");
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       }
     }
