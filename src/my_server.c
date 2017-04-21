@@ -1,7 +1,13 @@
 // Copyright (c) 2017 AZAIZ SLIM
 // All rights reserved
 
+#include <stdlib.h>
+#include "dbus/dbus.h"
+#include "sc_bus.h"
+
 #include "../include/data/all_parametres.h"
+#include "../include/data/dynamic_parametres.h"
+#include "../include/data/control_data.h"
 #include "../include/mongoose/mongoose.h"
 #include "../include/cjson/cJSON.h"
 
@@ -21,7 +27,6 @@ typedef struct NewOldPass{
     char* newPass;
 }NewOldPass;
 
-static All_parametres *all_parametres;
 
 char* usr="";
 char* pass="";
@@ -32,8 +37,6 @@ char* finalPass="";
 char* finalUser="";
 cJSON *objects[1];
 
-static const char* s_http_port = "8000";
-static struct mg_serve_http_opts s_http_server_opts;
 
 
 
@@ -150,7 +153,11 @@ int authentificate(char* string ){
         cur_line++;
   }
   fclose(ptrFile);
-    if((strcmp(usr,USERNAME))||(strcmp(pass,finalPass)))
+  printf("username =%s\n",usr);
+  printf("password =%s\n",pass);
+
+  //if((strcmp(usr,USERNAME))&&(strcmp(pass,finalPass)))
+  if((strcmp(pass,finalPass)))
         return 0 ;
       else
         return -1;
@@ -189,10 +196,10 @@ int resetPassword(char* string ){
   while(fgets(line,31,ptrFile)!= NULL ) /* read a line */
   {
       if (cur_line == 0) {
-          // line[strlen(line)-1] = '\0';
+           //line[strlen(line)-1] = '\0';
            finalPass = line;
            printf(" finalPass=%s \n", finalPass);
-           //  sprintf(finalPass,"%s",line);
+             sprintf(finalPass,"%s",line);
              }
         cur_line++;
   }
@@ -234,14 +241,23 @@ char* mg_str2pTEXT(struct mg_str *mgstr)
     return text;
 }
 
+cJSON *objects[1];
+//static
+static const char* s_http_port = "8000";
+static struct mg_serve_http_opts s_http_server_opts;
 
+static All_parametres *all_parametres;
+static Dynamic_parametres *dynamic_parametres;
+static Control_data *control_data;
 
+//my event handler
 static void ev_handler(struct mg_connection *nc, int ev, void *p) {
   struct http_message *hm = (struct http_message *) p;
   if (ev == MG_EV_HTTP_REQUEST) {
     
     //authentification
     if (strstr(mg_str2pTEXT(&hm->uri),"/authentificate")) {
+        printf("result = %d",authentificate(mg_str2pTEXT(&hm->uri)));
       if(authentificate(mg_str2pTEXT(&hm->uri))){
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         printf("%s\nsuccess\n",mg_str2pTEXT(&hm->uri));
@@ -271,8 +287,12 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
     else if (strstr(mg_str2pTEXT(&hm->uri),"/control")) {
       if(!parseCommand(mg_str2pTEXT(&hm->uri))){
         //execute command
+        control_data = malloc(sizeof(Control_data));
+        int ret = create_control_data(control_data,cmd);
+       
+        //print message
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, "%s CLICKED",cmd);
+        mg_printf_http_chunk(nc, "%s CLICKED \nresultat=%d",cmd,ret);
         printf("\n%s ",mg_str2pTEXT(&hm->uri));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       } else {
@@ -281,7 +301,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       }
     }
-    //diagnostic
+    //diagnostic static parametres
     else if (strstr(mg_str2pTEXT(&hm->uri),"diagnostic")) {
         //all parametres
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
@@ -396,7 +416,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         mg_printf_http_chunk(nc, "{\"diagnostics\":%s}\n",result);
 
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      }else if (strstr(mg_str2pTEXT(&hm->uri),"identification")) {
+    }else if (strstr(mg_str2pTEXT(&hm->uri),"identification")) {
         //all parametres
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //json
@@ -429,7 +449,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         mg_printf_http_chunk(nc, "{\"identification\":%s}\n",result);
 
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      }else if (strstr(mg_str2pTEXT(&hm->uri),"conditionalAccess")) {
+    }else if (strstr(mg_str2pTEXT(&hm->uri),"conditionalAccess")) {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //json
         int i;
@@ -448,7 +468,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         mg_printf_http_chunk(nc, "{\"conditional\":%s}\n",result);
 
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      }else if (strstr(mg_str2pTEXT(&hm->uri),"memory")) {
+    }else if (strstr(mg_str2pTEXT(&hm->uri),"memory")) {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //json
         int i;
@@ -472,7 +492,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
 
-      }else if (strstr(mg_str2pTEXT(&hm->uri),"loader")) {
+     }else if (strstr(mg_str2pTEXT(&hm->uri),"loader")) {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //json
         int i;
@@ -491,7 +511,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         mg_printf_http_chunk(nc, "{\"loader\":%s}\n",result);
 
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      }else if (strstr(mg_str2pTEXT(&hm->uri),"software")) {
+     }else if (strstr(mg_str2pTEXT(&hm->uri),"software")) {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //json
         int i;
@@ -512,7 +532,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         mg_printf_http_chunk(nc, "{\"software\":%s}\n",result);
 
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      }else if (strstr(mg_str2pTEXT(&hm->uri),"network")) {
+     }else if (strstr(mg_str2pTEXT(&hm->uri),"network")) {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //json
         int i;
@@ -543,7 +563,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         mg_printf_http_chunk(nc, "{\"network\":%s}\n",result);
                                        
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      }else if (strstr(mg_str2pTEXT(&hm->uri),"sysInfo")) {
+     }else if (strstr(mg_str2pTEXT(&hm->uri),"sysInfo")) {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //json
         int i;
@@ -583,6 +603,40 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"sysInfo\":%s}\n",result);
 
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
+      // dynamic parametres
+    }else if (strstr(mg_str2pTEXT(&hm->uri),"realTime")) {
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //json
+        int i;
+        
+        dynamic_parametres = malloc(sizeof(Dynamic_parametres));
+        create_dynamic_parametres(dynamic_parametres);
+        
+        cJSON *root = cJSON_CreateArray();
+        for (i = 0; i < 7; i++){
+            cJSON_AddItemToArray(root ,objects[i] = cJSON_CreateObject()); 
+        }
+        //VALUE
+        cJSON_AddStringToObject(objects[0], "value",dynamic_parametres->used_memory);
+        cJSON_AddStringToObject(objects[1], "value",dynamic_parametres->Internal_Temperature);
+        cJSON_AddStringToObject(objects[2], "value",dynamic_parametres->CPU_Utilisation);
+        cJSON_AddStringToObject(objects[3], "value",dynamic_parametres->HDMI_Port_Status);
+        cJSON_AddStringToObject(objects[4], "value",dynamic_parametres->stb_ethernet_port_status);
+        cJSON_AddStringToObject(objects[5], "value",dynamic_parametres->stb_ip_address);
+        cJSON_AddStringToObject(objects[6], "value",dynamic_parametres->total_software_updates);
+        //parameter
+        cJSON_AddStringToObject(objects[0], "parameter","used_memory");
+        cJSON_AddStringToObject(objects[1], "parameter","Internal_Temperature");
+        cJSON_AddStringToObject(objects[2], "parameter","CPU_Utilisation");
+        cJSON_AddStringToObject(objects[3], "parameter","HDMI_Port_Status");
+        cJSON_AddStringToObject(objects[4], "parameter","stb_ethernet_port_status");
+        cJSON_AddStringToObject(objects[5], "parameter","stb_ip_address");
+        cJSON_AddStringToObject(objects[6], "parameter","total_software_updates");
+
+        char* result = cJSON_Print(root);
+        mg_printf_http_chunk(nc, "{\"realTime\":%s}\n",result);
+
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       }        
        mg_serve_http(nc, (struct http_message *) p, s_http_server_opts);
@@ -590,7 +644,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 }
 
 
-
+//main
 int main(void) {
   struct mg_mgr mgr;
   struct mg_connection *nc;

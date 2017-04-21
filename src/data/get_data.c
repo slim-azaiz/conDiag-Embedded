@@ -97,15 +97,3 @@ char* get_method_value_by_array(char* method,int length)
 	}
 	return "";
 }
-/*
-int main(){
-    Get_data *data = malloc(sizeof(Get_data));
-    create_get_data();
-    set_method(data,SERIAL_NUMBER);
-    printf("\nSERIAL NUMBER = %s\n",get_method_value_by_array(get_method(data),30));
-    destroy_get_data();
-    free(data);
-
-    return 0;
-}
-*/
