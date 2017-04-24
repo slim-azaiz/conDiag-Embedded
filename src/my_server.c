@@ -366,52 +366,52 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
        
         //parameter
         //stb_identification      
-        cJSON_AddStringToObject(objects[0], "parameter","serial_number");
-        cJSON_AddStringToObject(objects[1], "parameter","nagra_serial_number");
-        cJSON_AddStringToObject(objects[2], "parameter","model");
-        cJSON_AddStringToObject(objects[3], "parameter","stb_mac_address");
-        cJSON_AddStringToObject(objects[4], "parameter","ethernet_mac_address");
-        cJSON_AddStringToObject(objects[5], "parameter","firmware_version");
-        cJSON_AddStringToObject(objects[6], "parameter","network_id");
-        cJSON_AddStringToObject(objects[7], "parameter","manufacturer");
+        cJSON_AddStringToObject(objects[0], "parameter","Serial number");
+        cJSON_AddStringToObject(objects[1], "parameter","Nagra serial number");
+        cJSON_AddStringToObject(objects[2], "parameter","Model");
+        cJSON_AddStringToObject(objects[3], "parameter","Stb mac address");
+        cJSON_AddStringToObject(objects[4], "parameter","Ethernet mac address");
+        cJSON_AddStringToObject(objects[5], "parameter","Firmware version");
+        cJSON_AddStringToObject(objects[6], "parameter","Network id");
+        cJSON_AddStringToObject(objects[7], "parameter","Manufacturer");
         //conditional_access
-        cJSON_AddStringToObject(objects[8], "parameter","Nagra_Serial_Number");
-        cJSON_AddStringToObject(objects[9], "parameter","CA_Provider_Name");
+        cJSON_AddStringToObject(objects[8], "parameter","Nagra Serial Number");
+        cJSON_AddStringToObject(objects[9], "parameter","CA provider name");
         //loader_data
-        cJSON_AddStringToObject(objects[10], "parameter","boot_loader_version");
-        cJSON_AddStringToObject(objects[11], "parameter","boot_loader_crc");
+        cJSON_AddStringToObject(objects[10], "parameter","Boot loader version");
+        cJSON_AddStringToObject(objects[11], "parameter","Boot loader crc");
         //memoire_data
-        cJSON_AddStringToObject(objects[12], "parameter","memory_block_status");
-        cJSON_AddStringToObject(objects[13], "parameter","used_memory");
-        cJSON_AddStringToObject(objects[14], "parameter","total_memory");
-        cJSON_AddStringToObject(objects[15], "parameter","addressing_memory");
+        cJSON_AddStringToObject(objects[12], "parameter","Memory block status");
+        cJSON_AddStringToObject(objects[13], "parameter","Used memory");
+        cJSON_AddStringToObject(objects[14], "parameter","Total memory");
+        cJSON_AddStringToObject(objects[15], "parameter","Addressing memory");
         //network_data
-        cJSON_AddStringToObject(objects[16], "parameter","stb_serial_number");
-        cJSON_AddStringToObject(objects[17], "parameter","manufacturer");
-        cJSON_AddStringToObject(objects[18], "parameter","stb_ip_address");
-        cJSON_AddStringToObject(objects[19], "parameter","stb_mac_ethernet");
-        cJSON_AddStringToObject(objects[20], "parameter","stb_ethernet_port_status");
-        cJSON_AddStringToObject(objects[21], "parameter","dns_serverII");
-        cJSON_AddStringToObject(objects[22], "parameter","stb_ip_default_gateway");
-        cJSON_AddStringToObject(objects[23], "parameter","stb_subnet_mask");
+        cJSON_AddStringToObject(objects[16], "parameter","STB serial number");
+        cJSON_AddStringToObject(objects[17], "parameter","Manufacturer");
+        cJSON_AddStringToObject(objects[18], "parameter","STB ip address");
+        cJSON_AddStringToObject(objects[19], "parameter","STB mac ethernet");
+        cJSON_AddStringToObject(objects[20], "parameter","STB ethernet port status");
+        cJSON_AddStringToObject(objects[21], "parameter","DNS serverII");
+        cJSON_AddStringToObject(objects[22], "parameter","STB ip default gateway");
+        cJSON_AddStringToObject(objects[23], "parameter","STB subnet mask");
         //software_data
-        cJSON_AddStringToObject(objects[24], "parameter","tivo_software_name");
-        cJSON_AddStringToObject(objects[25], "parameter","date_time_last_stb_software");
-        cJSON_AddStringToObject(objects[26], "parameter","total_software_updates");
+        cJSON_AddStringToObject(objects[24], "parameter","TiVo software name");
+        cJSON_AddStringToObject(objects[25], "parameter","Date time last STB software");
+        cJSON_AddStringToObject(objects[26], "parameter","Total software updates");
         //sys_info 
-        cJSON_AddStringToObject(objects[27], "parameter","IR_Input_Status");
-        cJSON_AddStringToObject(objects[28], "parameter","Internal_Temperature");
-        cJSON_AddStringToObject(objects[29], "parameter","CPU_Utilisation");
-        cJSON_AddStringToObject(objects[30], "parameter","HDMI_Port_Status");
-        cJSON_AddStringToObject(objects[31], "parameter","Video_Resolution");
-        cJSON_AddStringToObject(objects[32], "parameter","Video_Aspect_Ratio");
-        cJSON_AddStringToObject(objects[33], "parameter","Video_Format");
-        cJSON_AddStringToObject(objects[34], "parameter","Diagnostics_Pages_Language");
-        cJSON_AddStringToObject(objects[35], "parameter","Audio_Setup");
-        cJSON_AddStringToObject(objects[36], "parameter","STB_Lifetime");
-        cJSON_AddStringToObject(objects[37], "parameter","STB_totalPowerOff");
-        cJSON_AddStringToObject(objects[38], "parameter","Time_since_last_STB_boot_up");
-        cJSON_AddStringToObject(objects[39], "parameter","Total_STB_Reboot");
+        cJSON_AddStringToObject(objects[27], "parameter","IR Input Status");
+        cJSON_AddStringToObject(objects[28], "parameter","Internal Temperature");
+        cJSON_AddStringToObject(objects[29], "parameter","CPU utilisation");
+        cJSON_AddStringToObject(objects[30], "parameter","HDMI Port Status");
+        cJSON_AddStringToObject(objects[31], "parameter","Video Resolution");
+        cJSON_AddStringToObject(objects[32], "parameter","Video Aspect_Ratio");
+        cJSON_AddStringToObject(objects[33], "parameter","Video Format");
+        cJSON_AddStringToObject(objects[34], "parameter","Diagnostics Pages Language");
+        cJSON_AddStringToObject(objects[35], "parameter","Audio Setup");
+        cJSON_AddStringToObject(objects[36], "parameter","STB Lifetime");
+        cJSON_AddStringToObject(objects[37], "parameter","STB totalPowerOff");
+        cJSON_AddStringToObject(objects[38], "parameter","Time since last STB boot_up");
+        cJSON_AddStringToObject(objects[39], "parameter","Total STB_Reboot");
         char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"diagnostics\":%s}\n",result);
 
@@ -436,14 +436,14 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         cJSON_AddStringToObject(objects[6], "value",all_parametres->network_id);
         cJSON_AddStringToObject(objects[7], "value",all_parametres->manufacturer);
         //parameter
-        cJSON_AddStringToObject(objects[0], "parameter","serial_number");
-        cJSON_AddStringToObject(objects[1], "parameter","nagra_serial_number");
-        cJSON_AddStringToObject(objects[2], "parameter","model");
-        cJSON_AddStringToObject(objects[3], "parameter","stb_mac_address");
-        cJSON_AddStringToObject(objects[4], "parameter","ethernet_mac_address");
-        cJSON_AddStringToObject(objects[5], "parameter","firmware_version");
-        cJSON_AddStringToObject(objects[6], "parameter","network_id");
-        cJSON_AddStringToObject(objects[7], "parameter","manufacturer");
+        cJSON_AddStringToObject(objects[0], "parameter","Serial number");
+        cJSON_AddStringToObject(objects[1], "parameter","Nagra serial number");
+        cJSON_AddStringToObject(objects[2], "parameter","Model");
+        cJSON_AddStringToObject(objects[3], "parameter","STB mac address");
+        cJSON_AddStringToObject(objects[4], "parameter","Ethernet mac address");
+        cJSON_AddStringToObject(objects[5], "parameter","Firmware version");
+        cJSON_AddStringToObject(objects[6], "parameter","Network ID");
+        cJSON_AddStringToObject(objects[7], "parameter","Manufacturer");
        
         char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"identification\":%s}\n",result);
@@ -462,8 +462,8 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         cJSON_AddStringToObject(objects[0], "value",all_parametres->Nagra_Serial_Number);
         cJSON_AddStringToObject(objects[1], "value",all_parametres->CA_Provider_Name);
         //parameter
-        cJSON_AddStringToObject(objects[0], "parameter","Nagra_Serial_Number");
-        cJSON_AddStringToObject(objects[1], "parameter","CA_Provider_Name");
+        cJSON_AddStringToObject(objects[0], "parameter","Nagra serial number");
+        cJSON_AddStringToObject(objects[1], "parameter","CA provider name");
         char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"conditional\":%s}\n",result);
 
@@ -483,10 +483,10 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         cJSON_AddStringToObject(objects[2], "value",all_parametres->total_memory);
         cJSON_AddStringToObject(objects[3], "value",all_parametres->addressing_memory);
         //parameter
-        cJSON_AddStringToObject(objects[0], "parameter","memory_block_status");
-        cJSON_AddStringToObject(objects[1], "parameter","used_memory");
-        cJSON_AddStringToObject(objects[2], "parameter","total_memory");
-        cJSON_AddStringToObject(objects[3], "parameter","addressing_memory");
+        cJSON_AddStringToObject(objects[0], "parameter","Memory block status");
+        cJSON_AddStringToObject(objects[1], "parameter","Used memory");
+        cJSON_AddStringToObject(objects[2], "parameter","Total memory");
+        cJSON_AddStringToObject(objects[3], "parameter","Addressing memory");
         char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"memory\":%s}\n",result);
 
@@ -505,8 +505,8 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         cJSON_AddStringToObject(objects[0], "value",all_parametres->boot_loader_version);
         cJSON_AddStringToObject(objects[1], "value",all_parametres->boot_loader_crc);
         //parameter
-        cJSON_AddStringToObject(objects[0], "parameter","boot_loader_version");
-        cJSON_AddStringToObject(objects[1], "parameter","boot_loader_crc");
+        cJSON_AddStringToObject(objects[0], "parameter","Boot loader version");
+        cJSON_AddStringToObject(objects[1], "parameter","Boot loader crc");
         char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"loader\":%s}\n",result);
 
@@ -525,9 +525,9 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         cJSON_AddStringToObject(objects[1], "value",all_parametres->date_time_last_stb_software);
         cJSON_AddStringToObject(objects[2], "value",all_parametres->total_software_updates);
         //parameter
-        cJSON_AddStringToObject(objects[0], "parameter","tivo_software_name");
-        cJSON_AddStringToObject(objects[1], "parameter","date_time_last_stb_software");
-        cJSON_AddStringToObject(objects[2], "parameter","total_software_updates");
+        cJSON_AddStringToObject(objects[0], "parameter","TiVo software name");
+        cJSON_AddStringToObject(objects[1], "parameter","Date/time last STB software");
+        cJSON_AddStringToObject(objects[2], "parameter","Total software updates");
         char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"software\":%s}\n",result);
 
@@ -551,14 +551,14 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         cJSON_AddStringToObject(objects[6], "value",all_parametres->stb_ip_default_gateway);
         cJSON_AddStringToObject(objects[7], "value",all_parametres->stb_subnet_mask);
         //parameter      
-        cJSON_AddStringToObject(objects[0],  "parameter","stb_serial_number");
-        cJSON_AddStringToObject(objects[1],  "parameter","manufacturer");
-        cJSON_AddStringToObject(objects[2],  "parameter","stb_ip_address");
-        cJSON_AddStringToObject(objects[3],  "parameter","stb_mac_ethernet");
-        cJSON_AddStringToObject(objects[4],  "parameter","stb_ethernet_port_status");
-        cJSON_AddStringToObject(objects[5],  "parameter","dns_serverII");
-        cJSON_AddStringToObject(objects[6],  "parameter","stb_ip_default_gateway");
-        cJSON_AddStringToObject(objects[7],  "parameter","stb_subnet_mask");
+        cJSON_AddStringToObject(objects[0],  "parameter","STB serial number");
+        cJSON_AddStringToObject(objects[1],  "parameter","Manufacturer");
+        cJSON_AddStringToObject(objects[2],  "parameter","STB ip address");
+        cJSON_AddStringToObject(objects[3],  "parameter","STB mac ethernet");
+        cJSON_AddStringToObject(objects[4],  "parameter","STB ethernet port status");
+        cJSON_AddStringToObject(objects[5],  "parameter","DNS serverII");
+        cJSON_AddStringToObject(objects[6],  "parameter","STB_ip default gateway");
+        cJSON_AddStringToObject(objects[7],  "parameter","STB subnet mask");
         char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"network\":%s}\n",result);
                                        
@@ -587,19 +587,19 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         cJSON_AddStringToObject(objects[11], "value",all_parametres->Time_since_last_STB_boot_up);
         cJSON_AddStringToObject(objects[12], "value",all_parametres->Total_STB_Reboot);
        //parameter
-        cJSON_AddStringToObject(objects[0],  "parameter","IR_Input_Status");
-        cJSON_AddStringToObject(objects[1],  "parameter","Internal_Temperature");
-        cJSON_AddStringToObject(objects[2],  "parameter","CPU_Utilisation");
-        cJSON_AddStringToObject(objects[3],  "parameter","HDMI_Port_Status");
-        cJSON_AddStringToObject(objects[4],  "parameter","Video_Resolution");
-        cJSON_AddStringToObject(objects[5],  "parameter","Video_Aspect_Ratio");
-        cJSON_AddStringToObject(objects[6],  "parameter","Video_Format");
-        cJSON_AddStringToObject(objects[7],  "parameter","Diagnostics_Pages_Language");
-        cJSON_AddStringToObject(objects[8],  "parameter","Audio_Setup");
-        cJSON_AddStringToObject(objects[9],  "parameter","STB_Lifetime");
-        cJSON_AddStringToObject(objects[10], "parameter","STB_totalPowerOff");
-        cJSON_AddStringToObject(objects[11], "parameter","Time_since_last_STB_boot_up");
-        cJSON_AddStringToObject(objects[12], "parameter","Total_STB_Reboot");
+        cJSON_AddStringToObject(objects[0],  "parameter","IR input status");
+        cJSON_AddStringToObject(objects[1],  "parameter","Internal temperature");
+        cJSON_AddStringToObject(objects[2],  "parameter","CPU utilisation");
+        cJSON_AddStringToObject(objects[3],  "parameter","HDMI port status");
+        cJSON_AddStringToObject(objects[4],  "parameter","Video resolution");
+        cJSON_AddStringToObject(objects[5],  "parameter","Video aspect ratio");
+        cJSON_AddStringToObject(objects[6],  "parameter","Video format");
+        cJSON_AddStringToObject(objects[7],  "parameter","Diagnostics pages language");
+        cJSON_AddStringToObject(objects[8],  "parameter","Audio setup");
+        cJSON_AddStringToObject(objects[9],  "parameter","STB lifetime");
+        cJSON_AddStringToObject(objects[10], "parameter","STB totalPowerOff");
+        cJSON_AddStringToObject(objects[11], "parameter","Time since last STB boot up");
+        cJSON_AddStringToObject(objects[12], "parameter","Total STB reboot");
         char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"sysInfo\":%s}\n",result);
 
@@ -626,13 +626,13 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         cJSON_AddStringToObject(objects[5], "value",dynamic_parametres->stb_ip_address);
         cJSON_AddStringToObject(objects[6], "value",dynamic_parametres->total_software_updates);
         //parameter
-        cJSON_AddStringToObject(objects[0], "parameter","used_memory");
-        cJSON_AddStringToObject(objects[1], "parameter","Internal_Temperature");
-        cJSON_AddStringToObject(objects[2], "parameter","CPU_Utilisation");
-        cJSON_AddStringToObject(objects[3], "parameter","HDMI_Port_Status");
-        cJSON_AddStringToObject(objects[4], "parameter","stb_ethernet_port_status");
-        cJSON_AddStringToObject(objects[5], "parameter","stb_ip_address");
-        cJSON_AddStringToObject(objects[6], "parameter","total_software_updates");
+        cJSON_AddStringToObject(objects[0], "parameter","Used Memory");
+        cJSON_AddStringToObject(objects[1], "parameter","Internal temperature");
+        cJSON_AddStringToObject(objects[2], "parameter","CPU utilisation");
+        cJSON_AddStringToObject(objects[3], "parameter","HDMI port status");
+        cJSON_AddStringToObject(objects[4], "parameter","STB ethernet_port_status");
+        cJSON_AddStringToObject(objects[5], "parameter","STB IP Address");
+        cJSON_AddStringToObject(objects[6], "parameter","Total software updates");
 
         char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"realTime\":%s}\n",result);

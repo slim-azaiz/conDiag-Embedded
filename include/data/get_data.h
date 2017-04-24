@@ -59,7 +59,7 @@
  #define INTERNAL_TEMPERATURE						"getThermalManagement"
  #define CPU_UTILISATION							"get_cpu_utilization"
  #define HDMI_PORT_STATUS							"getHdmiConnectionStatus"
- #define VIDEO_RESOLUTION							"TBD"
+ #define VIDEO_RESOLUTION							"GetCurrentResolution"
  #define VIDEO_ASPECT_RATIO							"TBD"
  #define VIDEO_FORMAT								"TBD"
  #define DIAGNOSTICS_PAGES_LANGUAGE					"TBD"
