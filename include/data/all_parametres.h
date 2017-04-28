@@ -5,8 +5,10 @@
 
 typedef struct All_parametres 
 {
+
+    char* members[44][2];
     //stb_identification
-    char* serial_number;
+/*    char* serial_number;
 	char* nagra_serial_number;
 	char* model;
 	char* ethernet_mac_address;
@@ -54,7 +56,7 @@ typedef struct All_parametres
     char* STB_totalPowerOff;
     char* Time_since_last_STB_boot_up;
 	char* Total_STB_Reboot;
-}All_parametres; 
+*/}All_parametres; 
 
 
 void create_all_parametres(All_parametres *all_parametres);

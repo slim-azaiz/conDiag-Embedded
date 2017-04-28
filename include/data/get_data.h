@@ -22,7 +22,7 @@
 #define ETHERNET_MAC_ADDRESS						"getMACAddress_Diagnostic"
 #define STB_MANUFACTURING_DATE						"TBD"
 #define HARDWARE_VERSION							"getHardwareVersion"
-#define NETWORK_ID									"getNetworkId"
+#define NETWORK_ID									"getTcdMode"/*"getNetworkId"*/
 #define MANUFACTURER								"getManufacturer"
 
 /* Nvmem parameters */
