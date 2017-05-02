@@ -13,7 +13,7 @@ LDFLAGS += -lsc_bus
 #LDFLAGS = 
 
 
-SOURCES=$(wildcard src/data/*.c src/my_server.c src/mongoose/*.c src/cjson/* )
+SOURCES=$(wildcard src/data/*.c src/my_server.c src/mongoose/*.c src/cjson/* src/utils/*.c )
 OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
 
 PROG = bin/myGather

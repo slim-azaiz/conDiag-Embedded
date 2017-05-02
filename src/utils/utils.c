@@ -2,12 +2,12 @@
 
 
 //vars
-char* usr="";
-char* pass="";
-char* oldPass="";
-char* newPass="";
-char* finalPass="";
-char* finalUser="";
+char* usr;
+char* pass;
+char* oldPass;
+char* newPass;
+char* finalPass;
+char* finalUser;
 //write new password in file
 int modifyPass(char* password){
     FILE * ptrFile;
@@ -117,19 +117,19 @@ int authentificate(char* string ){
           // line[strlen(line)-1] = '\0';
            finalPass = line;
            printf(" finalPass=%s \n", finalPass);
-           //  sprintf(finalPass,"%s",line);
+
              }
         cur_line++;
   }
   fclose(ptrFile);
-   // if((strcmp(usr,USERNAME)) && (strcmp(pass,finalPass)))
+    if((strcmp(usr,USERNAME)) || (strcmp(pass,finalPass))){
+    //if( (strcmp(pass,finalPass))){
     
     printf("username= %s\n",usr);
     printf("password= %s\n",pass);
-  if((strcmp(usr,USERNAME)))
-        return 1 ;
-      else
-        return -1;
+    return 0 ;
+    } else
+        return 1;
 }
 //parse new old password
 void parseNewOldPassword(char* string){  

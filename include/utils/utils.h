@@ -12,6 +12,7 @@
 #include "../../include/data/control_data.h"
 #include "../../include/mongoose/mongoose.h"
 #include "../../include/cjson/cJSON.h"
+#include "../../include/data/set_parametres.h"
 
 #define USERNAME "root"
 #define PASSWORD "root"
