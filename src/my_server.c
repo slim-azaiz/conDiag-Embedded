@@ -15,6 +15,7 @@ static All_parametres *all_parametres;
 static Dynamic_parametres *dynamic_parametres;
 static Control_data *control_data;
 static Set_parametres *set_parametres;
+
 cJSON *objects[1];
 
 char* json(int nb,int index){

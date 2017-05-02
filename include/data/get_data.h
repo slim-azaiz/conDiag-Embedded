@@ -55,7 +55,7 @@
  #define CA_PROVIDER_NAME                           "get_ca_provider_name"
  
 /*Systeme_info parameters*/
- #define IR_INPUT_STATUS							"TBD"
+ #define IR_INPUT_STATUS							"TBD"//"get_ir_input_status"
  #define INTERNAL_TEMPERATURE						"getThermalManagement"
  #define CPU_UTILISATION							"get_cpu_utilization"
  #define HDMI_PORT_STATUS							"getHdmiConnectionStatus"
