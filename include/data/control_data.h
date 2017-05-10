@@ -10,7 +10,7 @@ typedef struct Control_data{
     int code;
 }Control_data;
 
-int create_control_data(Control_data * conrol_data,char* cmd);
+void create_control_data();
 void destroy_control_data();
 int setCode(char* code);
 #endif //CONTROL_DATA_H

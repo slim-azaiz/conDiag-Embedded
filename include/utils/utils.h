@@ -16,6 +16,7 @@
 
 #define USERNAME "root"
 #define PASSWORD "root"
+#define FILE_PATH "/volatile/sagem/diagnostic/conDiagd.conf" 
 
 //structures
 typedef struct Auth{
@@ -28,6 +29,10 @@ typedef struct NewOldPass{
     char* newPass;
 }NewOldPass;
 
+typedef struct NewOldUser{
+    char* oldUser;
+    char* newUser;
+}NewOldUser;
 
 
 char* cmd;
@@ -38,8 +43,7 @@ int modifyPass(char* password);
 int parseCommand(char* string);
 void parseNewOldPassword(char* string);
 void parseUsernamePassword(char* string);
-int readPassword();
-int readUsername();
 int resetPassword(char* string );
+int resetUsername(char* string );
 
 #endif //UTILS_H

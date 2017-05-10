@@ -1,11 +1,21 @@
 // Copyright (c) 2017 AZAIZ SLIM
 // All rights reserved
-
 #include <stdlib.h>
 #include "dbus/dbus.h"
 #include "sc_bus.h"
 #include "../include/utils/utils.h"
 
+#include <unistd.h>
+#include <stdlib.h> 
+#include <sys/types.h>
+#include <pwd.h>
+#include <grp.h>
+#include <linux/capability.h>
+#include <sys/prctl.h>
+#include "libcap.h"
+#include <assert.h>
+
+#define USER 	"diagnostic"
 
 //static
 static const char* s_http_port = "8000";
@@ -13,9 +23,147 @@ static struct mg_serve_http_opts s_http_server_opts;
 
 static All_parametres *all_parametres;
 static Dynamic_parametres *dynamic_parametres;
-static Control_data *control_data;
 static Set_parametres *set_parametres;
 
+//drop root privileges
+int drop_root_privileges_( const char * const user, size_t cap_nb, const cap_value_t * const cap_list ) 
+{
+	cap_t       caps;
+	cap_value_t cap_vals_list[CAP_LAST_CAP+2];
+	struct passwd *pwd = NULL;
+	struct group *grp = NULL;
+	int ngrp = 0;
+	gid_t *grps = NULL;
+	register uid_t uid;
+	register gid_t gid;
+	uid_t ru, eu, su;
+	gid_t rg, eg, sg;
+	int ret, i;
+
+	assert (NULL != user);
+
+	if(cap_nb > 0)
+	{
+		assert (NULL != cap_list);
+		assert ( CAP_LAST_CAP > cap_nb);
+		caps = cap_get_proc();
+		assert (NULL != caps);
+		ret = cap_clear(caps); /* drop all capabilities*/
+		assert (0 == ret);
+
+		for( i = 0; i < cap_nb; i++ ) 
+		{
+			cap_vals_list[i] = cap_list[i];
+		}
+		cap_vals_list[cap_nb] = CAP_SETGID;
+		cap_vals_list[cap_nb+1] = CAP_SETUID;
+		ret = cap_set_flag(caps, CAP_PERMITTED, cap_nb+2, cap_vals_list, CAP_SET);		
+		assert(0 == ret);
+		ret = cap_set_flag(caps, CAP_EFFECTIVE, cap_nb+2, cap_vals_list, CAP_SET);
+		assert(0 == ret);
+		ret = cap_set_proc(caps);
+		assert(0 == ret);
+		ret = cap_free(caps);
+		assert(-1 != ret);
+		ret = prctl(PR_SET_KEEPCAPS,1);
+		assert(-1 != ret);
+	}
+	pwd = getpwnam (user);
+	assert (NULL != pwd);
+	uid = pwd->pw_uid;
+	grp = getgrnam (user);
+	assert (NULL != grp);
+	gid = grp->gr_gid;
+	getgrouplist(user, gid, grps, &ngrp);
+  
+	if (ngrp > 0)
+	{
+		grps = alloca (sizeof (gid_t) * ngrp);
+		ret = getgrouplist (user, gid, grps, &ngrp);
+		assert (-1 != ret);
+		ret = setgroups(ngrp, grps);
+		assert (0 == ret);
+	}
+
+	do
+	{
+		ret = setresgid (gid, gid, gid);
+		assert (0 == ret);
+		ret = setresuid (uid, uid, uid);
+		assert (0 == ret);
+		ret = getresgid (&rg, &eg, &sg);
+		assert (0 == ret);
+		ret = getresuid (&ru, &eu, &su);
+		assert (0 == ret);
+	} while (  uid != ru || uid != eu || uid != su || gid != rg || gid != eg || gid != sg);
+
+	if(cap_nb > 0)
+	{
+		caps = cap_get_proc();
+		assert (NULL != caps);
+		ret = cap_set_flag(caps, CAP_EFFECTIVE, cap_nb, cap_list, CAP_SET);
+		assert(-1 != ret);
+		ret = cap_set_proc(caps);
+		assert(-1 != ret);
+		ret = cap_free(caps);
+		assert(-1 != ret);
+	}
+	printf("Dropped root privileges. Now running as UID %u GID %u\n", uid, gid);
+	return 0;
+}
+
+/* User ID to drop to */
+#define UID 1006
+/* Group ID to drop to */
+#define GID 1006
+
+int drop_root_privileges(void)
+{
+	uid_t real, eff, saved;
+	uid_t uid = (uid_t)UID;
+	gid_t gid = (gid_t)GID;
+	printf("Running as UID %u (effective %u) GID %u (effective %u)\n", getuid(), geteuid(), getgid(), getegid());
+
+	if (setresgid(gid, gid, gid) != 0)
+	{
+		printf("Failed changing GID to %d with error \n", gid); 
+		return -1;
+	}
+	
+	if (setresuid(uid, uid, uid) != 0)
+	{
+		printf("Failed changing UID to %d with error \n", uid);
+		return -1;
+	}
+	
+	if (getresuid(&real, &eff, &saved) != 0)
+	{
+		printf("Failed reading UID with error \n");
+		return -1;
+	}
+	
+	if (real != uid || eff != uid || saved != uid)
+	{
+		printf("UID sanity check failed\n");
+		return -1;
+	}
+
+	if (getresgid(&real, &eff, &saved) != 0)
+	{
+		printf("Failed reading GID with error \n");
+		return -1;
+	}
+	
+	if (real != gid || eff != gid || saved != gid)
+	{
+		printf("GID sanity check failed\n");
+		return -1;
+	}
+	printf("Dropped root privileges. Now running as UID %u GID %u\n", uid, gid);
+	return 0;
+}
+
+//static Set_data *data;
 cJSON *objects[1];
 
 char* json(int nb,int index){
@@ -63,16 +211,30 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       }
     }
+    //resetUsername
+    else if (strstr(mg_str2pTEXT(&hm->uri),"/resetUsername")) {
+      if(!resetUsername(mg_str2pTEXT(&hm->uri))){
+      
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        mg_printf_http_chunk(nc, "SUCCESS");
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      } else {
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        mg_printf_http_chunk(nc, "WRONG OLD USERNAME");
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+      }
+    }
     //control
     else if (strstr(mg_str2pTEXT(&hm->uri),"/control")) {
       if(!parseCommand(mg_str2pTEXT(&hm->uri))){
         //execute command
-        control_data = malloc(sizeof(Control_data));
-        int ret = create_control_data(control_data,cmd);
+       // control_data = malloc(sizeof(Control_data));
+       // int ret = create_control_data(control_data,cmd);
        
+        update_method_value(SET_IR_INPUT_ID, cmd);
         //print message
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, "%s CLICKED \nresultat=%d",cmd,ret);
+       // mg_printf_http_chunk(nc, "%s CLICKED \nresultat=%d",cmd,ret);
         printf("\n%s ",mg_str2pTEXT(&hm->uri));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       } else {
@@ -163,12 +325,28 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 
 //main
 int main(void) {
+  
   struct mg_mgr mgr;
   struct mg_connection *nc;
-  
+  //all parametres
   all_parametres = malloc(sizeof(All_parametres));
-  create_all_parametres(all_parametres);
+ 
+  
+  //drop root priveleges
 
+  cap_value_t cap_vals_list[4];
+  cap_vals_list[0] = CAP_IPC_LOCK;
+  cap_vals_list[1] = CAP_IPC_OWNER;
+  cap_vals_list[2] = CAP_NET_RAW;
+  cap_vals_list[3] = CAP_NET_BIND_SERVICE;
+  drop_root_privileges_(USER,4,cap_vals_list);
+  //drop_root_privileges();
+  prctl (PR_SET_DUMPABLE, 0, 0, 0, 0);
+  
+   create_all_parametres(all_parametres);
+  //control
+  create_control_data();
+  //init server
   mg_mgr_init(&mgr, NULL);
   printf("Starting web server on port %s\n", s_http_port);
 
@@ -187,6 +365,5 @@ int main(void) {
     mg_mgr_poll(&mgr, 1000);
   }
   mg_mgr_free(&mgr);
-
   return 0;
 }
