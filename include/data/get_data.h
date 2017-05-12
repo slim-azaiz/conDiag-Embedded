@@ -79,6 +79,40 @@
 #define MEMORY_BLOCK_STATUS							"TBD"
 #define USED_MEMORY									"get_used_memory"
 #define TOTAL_MEMORY								"get_total_memory"
+/* Nvmem parameters */
+#define TCD_MODE									"getTcdMode"
+#define SI_MILTICAST_ADDRESS						"getSiMulticastAddress"
+#define VM_INSTALLER_FREQUENCY						"getVmInstallerFrequency"
+#define VM_INSTALLER_SYMBOLRATE						"getVmInstallerSymbolRate"
+#define VM_INSTALLER_MODULATION						"getVmInstallerModulation"
+ 
+/*Tuner parametres */
+#define VirtualTunerMcastAddr                       "getVirtualTunerMcastAddr"
+#define VirtualTunerMcastPortNum					"getVirtualTunerMcastPortNum"
+#define VirtualTunerSocketStatus					"getVirtualTunerSocketStatus"
+#define VirtualTunerPMTStatus				       	"getVirtualTunerPMTStatus"
+#define VirtualTunerLastPAT					    	"getVirtualTunerLastPAT"
+#define VirtualTunerLastCAT					    	"getVirtualTunerLastCAT"
+
+#define TunerMcastStreamType                        "getTunerMcastStreamType"
+#define TunerStat                    				"getTunerStat"
+#define TunerCurrentFrequency						"getTunerCurrentFrequency"
+#define TunerPMTStatus						       	"getTunerPMTStatus"
+#define TunerLastPAT						    	"getTunerLastPAT"
+#define TunerLastCAT						    	"getTunerLastCAT"
+
+#define TSIndex                                     "getTSIndex"         
+#define TSFrequency                                 "getTSFrequency" 
+#define TSLockStatus                                "getTSLockStatus" 
+#define TSInputLevelDB                              "getTSInputLevelDB" 
+#define TSErrorRatePreRS                            "getTSErrorRatePreRS" 
+#define TSErrorRatePostRS                           "getTSErrorRatePostRS" 
+#define ErrorRatePreRSHistorical                    "getErrorRatePreRSHistorical" 
+#define ErrorRatePostRSHistorical                   "getErrorRatePostRSHistorical"
+#define TSSNREstimate                               "getTSSNREstimate"
+#define TSLastTunedTimestamp                        "getTSLastTunedTimestamp" 
+#define TSTunerID                                   "getTSTunerID"
+#define TSTransportStreamID                         "getTSTransportStreamID" 
 
 #define MAX_MW_PARAM_SIZE							128
 

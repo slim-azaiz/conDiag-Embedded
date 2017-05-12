@@ -4,7 +4,7 @@
 
 void create_all_parametres(All_parametres* all_parametres)
 {
-
+    int i =59;
    // members = (char *)malloc(40 * 2 * sizeof(char*));
     Get_data *data = malloc(sizeof(Get_data));
     create_get_data();
@@ -152,7 +152,152 @@ void create_all_parametres(All_parametres* all_parametres)
     set_method(data,TOTAL_STB_REBOOT);
     all_parametres->members[42][1]= "Total STB Reboot" ;
     all_parametres->members[42][0]= get_method_value_by_array(get_method(data),50);
+   
+    //nvmem
+    set_method(data,TCD_MODE);
     
-    destroy_get_data();
+    all_parametres->members[43][1]="TCD_MODE" ;
+    
+    printf("TCD_MODE =%s\n",hexdec(get_method_value_by_array(get_method(data),30)));
+    printf("TCD_MODE_LENGTH =%d\n",strlen(hexdec(get_method_value_by_array(get_method(data),30))));
+    printf("TCD_MODE_QAM_LENGTH =%d\n",strlen("1"));
+    if(strcmp(hexdec(get_method_value_by_array(get_method(data),30)),"1")==0){
+        printf("TCD_MODE QAM");
+        all_parametres->members[43][0]="QAM"; 
+    }
+    else if(strcmp(hexdec(get_method_value_by_array(get_method(data),30)),"2")==0){
+        printf("TCD_MODE IP");
+        all_parametres->members[43][0]="IP"; 
+    }
+    else{
+        printf("TCD_MODE UNINIITALIZED");
+        all_parametres->members[43][0]=""; 
+    }
+    //printf("TCD_MODE =%s",all_parametres->members[43][0]);
+    set_method(data,SI_MILTICAST_ADDRESS);
+    all_parametres->members[44][1]="SI_MILTICAST_ADDRESS" ;
+    all_parametres->members[44][0]= get_method_value_by_array(get_method(data),30);
+    set_method(data,VM_INSTALLER_FREQUENCY);
+    all_parametres->members[45][1]="VM_INSTALLER_FREQUENCY" ;
+    all_parametres->members[45][0]= get_method_value_by_array(get_method(data),30);
+    set_method(data,VM_INSTALLER_SYMBOLRATE);
+    all_parametres->members[46][1]="VM_INSTALLER_SYMBOLRATE" ;
+    all_parametres->members[46][0]= hexdec(get_method_value_by_array(get_method(data),30));
+    //all_parametres->members[46][0]= get_method_value_by_array(get_method(data),30);
+    set_method(data,VM_INSTALLER_MODULATION);
+    all_parametres->members[47][1]="VM_INSTALLER_MODULATION" ;
+  
+    if(strcmp(hexdec(get_method_value_by_array(get_method(data),30)),"16")==0){
+        all_parametres->members[47][0]="16"; 
+    }
+    else if(strcmp(hexdec(get_method_value_by_array(get_method(data),30)),"32")==0){
+        all_parametres->members[47][0]="32"; 
+    }
+    else if(strcmp(hexdec(get_method_value_by_array(get_method(data),30)),"64")==0){
+        all_parametres->members[47][0]="64"; 
+        }
+    else if(strcmp(hexdec(get_method_value_by_array(get_method(data),30)),"128")==0){
+        all_parametres->members[47][0]="128"; 
+    }
+    else if(strcmp(hexdec(get_method_value_by_array(get_method(data),30)),"256")==0){
+        all_parametres->members[47][0]="256"; 
+    }
+    else{
+        all_parametres->members[47][0]="64"; 
+    }
+    //tuner
+	set_method(data,VirtualTunerMcastAddr);
+	all_parametres->members[48][1]="VirtualTunerMcastAddr";
+	all_parametres->members[48][0]= get_method_value_by_array(get_method(data),30);
+	set_method(data,VirtualTunerMcastPortNum);
+	all_parametres->members[49][1]="VirtualTunerMcastPortNum";
+	all_parametres->members[49][0]= get_method_value_by_array(get_method(data),40);
+    set_method(data,VirtualTunerSocketStatus);
+    all_parametres->members[50][1]="VirtualTunerSocketStatus" ;
+    all_parametres->members[50][0]= get_method_value_by_array(get_method(data),30);
+    set_method(data,VirtualTunerPMTStatus);
+    all_parametres->members[51][1]="VirtualTunerPMTStatus" ;
+    all_parametres->members[51][0]= get_method_value_by_array(get_method(data),11);
+    set_method(data,VirtualTunerLastPAT);
+    all_parametres->members[52][1]="VirtualTunerLastPAT" ;
+    all_parametres->members[52][0]= get_method_value_by_array(get_method(data),30);
+    set_method(data,VirtualTunerLastCAT);
+    all_parametres->members[53][1]="VirtualTunerLastCAT" ;
+    all_parametres->members[53][0]= get_method_value_by_array(get_method(data),30);
+    set_method(data,TunerMcastStreamType);
+    all_parametres->members[54][1]="TunerMcastStreamType" ;
+    all_parametres->members[54][0]= get_method_value_by_array(get_method(data),30);
+    set_method(data,TunerStat);
+    all_parametres->members[55][1]="TunerStat" ;
+    all_parametres->members[55][0]= get_method_value_by_array(get_method(data),30);
+    set_method(data,TunerCurrentFrequency);
+    all_parametres->members[56][1]="TunerCurrentFrequency" ;
+    all_parametres->members[56][0]= get_method_value_by_array(get_method(data),30);
+    set_method(data,TunerPMTStatus);
+    all_parametres->members[57][1]="TunerPMTStatus" ;
+    all_parametres->members[57][0]= get_method_value_by_array(get_method(data),30);
+    set_method(data,TunerLastPAT);
+    all_parametres->members[58][1]="TunerLastPAT" ;
+    all_parametres->members[58][0]= get_method_value_by_array(get_method(data),30);
+    set_method(data,TunerLastCAT);
+    all_parametres->members[59][1]="TunerLastCAT" ;   
+    all_parametres->members[59][0]= get_method_value_by_array(get_method(data),50);   
+   
+
+    set_method(data,TSIndex);i++;
+    all_parametres->members[i][1]="TSIndex" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+
+    set_method(data,TSFrequency);i++;
+    all_parametres->members[i][1]="TSFrequency" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+    set_method(data,TSLockStatus);i++;
+    all_parametres->members[i][1]="TSLockStatus" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+    set_method(data,TSInputLevelDB);i++;
+    all_parametres->members[i][1]="TSInputLevelDB" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+    set_method(data,TSErrorRatePreRS);i++;
+    all_parametres->members[i][1]="TSErrorRatePreRS" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+    set_method(data,TSErrorRatePostRS);i++;
+    all_parametres->members[i][1]="TSErrorRatePostRS" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+    set_method(data,ErrorRatePreRSHistorical);i++;
+    all_parametres->members[i][1]="ErrorRatePreRSHistorical" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+    set_method(data,ErrorRatePostRSHistorical);i++;
+    all_parametres->members[i][1]="ErrorRatePostRSHistorical" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+    set_method(data,TSSNREstimate);i++;
+    all_parametres->members[i][1]="TSSNREstimate" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+    set_method(data,TSLastTunedTimestamp);i++;
+    all_parametres->members[i][1]="TSLastTunedTimestamp" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+    set_method(data,TSTunerID);i++;
+    all_parametres->members[i][1]="TSTunerID" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+    set_method(data,TSTransportStreamID);i++;
+    all_parametres->members[i][1]="TSTransportStreamID" ;   
+    all_parametres->members[i][0]= get_method_value_by_array(get_method(data),50);   
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+destroy_get_data();
     free(data);
 }

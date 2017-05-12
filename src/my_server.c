@@ -228,9 +228,6 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
     else if (strstr(mg_str2pTEXT(&hm->uri),"/control")) {
       if(!parseCommand(mg_str2pTEXT(&hm->uri))){
         //execute command
-       // control_data = malloc(sizeof(Control_data));
-       // int ret = create_control_data(control_data,cmd);
-       
         update_method_value(SET_IR_INPUT_ID, cmd);
         //print message
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
@@ -246,13 +243,11 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
     } 
     else if (strstr(mg_str2pTEXT(&hm->uri),"/networkID")) {
       if(!parseCommand(mg_str2pTEXT(&hm->uri))){
-        //execute command
-        set_parametres = malloc(sizeof(Set_parametres));
-        int ret = create_set_parametres(set_parametres,cmd);
-       
+        //set valued
+        update_method_value(SET_NETWORK_ID, cmd);
         //print message
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, "%s CLICKED \nresultat=%d",cmd,ret);
+        mg_printf_http_chunk(nc, "%s CLICKED \n",cmd);
         printf("\n%s ",mg_str2pTEXT(&hm->uri));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       } else {
@@ -297,12 +292,32 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         mg_printf_http_chunk(nc, "{\"network\":%s}\n",json(8,18));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-     }else if (strstr(mg_str2pTEXT(&hm->uri),"sysInfo")) {
+     }
+    else if (strstr(mg_str2pTEXT(&hm->uri),"sysInfo")) {
         //sys_info 
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         mg_printf_http_chunk(nc, "{\"sysInfo\":%s}\n",json(13,30));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
-    }else if (strstr(mg_str2pTEXT(&hm->uri),"realTime")) {
+    }
+    else if (strstr(mg_str2pTEXT(&hm->uri),"nvmem")) {
+        //nvmem 
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        mg_printf_http_chunk(nc, "{\"nvmem\":%s}\n",json(5,43));
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
+    }
+    else if (strstr(mg_str2pTEXT(&hm->uri),"qamVirtualTunerStatus")) {
+        //virtualTtuner 
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        mg_printf_http_chunk(nc, "{\"qamVirtualTunerStatus\":%s}\n",json(6,48));
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
+    }
+    else if (strstr(mg_str2pTEXT(&hm->uri),"qamTunerStatus")) {
+        //tuner 
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        mg_printf_http_chunk(nc, "{\"qamTunerStatus\":%s}\n",json(18,54));
+        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
+    }
+    else if (strstr(mg_str2pTEXT(&hm->uri),"realTime")) {
       // dynamic parametres
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         dynamic_parametres = malloc(sizeof(Dynamic_parametres));
@@ -330,7 +345,7 @@ int main(void) {
   struct mg_connection *nc;
   //all parametres
   all_parametres = malloc(sizeof(All_parametres));
- 
+  printf("\nnumber = %s\n",hexdec("00000010")); 
   
   //drop root priveleges
 
@@ -339,6 +354,7 @@ int main(void) {
   cap_vals_list[1] = CAP_IPC_OWNER;
   cap_vals_list[2] = CAP_NET_RAW;
   cap_vals_list[3] = CAP_NET_BIND_SERVICE;
+ 
   drop_root_privileges_(USER,4,cap_vals_list);
   //drop_root_privileges();
   prctl (PR_SET_DUMPABLE, 0, 0, 0, 0);
@@ -366,4 +382,5 @@ int main(void) {
   }
   mg_mgr_free(&mgr);
   return 0;
+  
 }

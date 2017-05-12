@@ -3,10 +3,23 @@
 
 #include "get_data.h"
 
+#define TCD_MODE_UNINITIALIZED	"0"
+#define TCD_MODE_QAM			"1"
+#define TCD_MODE_IP				"2"
+
+#define MODULATION_QAM_16		"16"
+#define MODULATION_QAM_32		"32"
+#define MODULATION_QAM_64		"64"
+#define MODULATION_QAM_128		"128"
+#define MODULATION_QAM_256		"256"
+
 typedef struct All_parametres 
 {
 
     char* members[44][2];
+    
+    
+    
     //stb_identification
 /*    char* serial_number;
 	char* nagra_serial_number;
