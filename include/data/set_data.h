@@ -18,7 +18,15 @@
 #define DIAGNOSTIC_MENU_DBUS_INTERFACE_MONITORING	"com.sagemcom.stb.tr69datamodel"
 
 /* Nvmem parameters */
-#define SET_NETWORK_ID									"setVmInstallerFrequency"/*"setNetworkId"*/
+/*#define SET_NETWORK_ID									"setVmInstallerFrequency""setNetworkId"*/
+
+#define SET_NETWORK_ID									"setNetworkId"
+#define SET_TCD_MODE									"setTcdMode"
+#define SET_SI_MILTICAST_ADDRESS						"setSiMulticastAddress"
+#define SET_VM_INSTALLER_FREQUENCY						"setVmInstallerFrequency"
+#define SET_VM_INSTALLER_SYMBOLRATE						"setVmInstallerSymbolRate"
+#define SET_VM_INSTALLER_MODULATION						"setVmInstallerModulation"
+
 #define SET_IR_INPUT_ID									"setIrInputId"
 
 typedef struct Set_data

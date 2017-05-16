@@ -1,6 +1,5 @@
 #include "../../include/utils/utils.h"
 
-
 //vars
 char* usr;
 char* pass;
@@ -22,6 +21,26 @@ int parseCommand(char* string){
     cmd = str;
     return 0;
 }
+void parseParameterValue(char* string){
+    Set *set = malloc(sizeof(Set));
+    valueToSet="";
+    parameterToSet="";
+    char* search = "/";
+    char* str = "";
+    str = strtok(string,search);
+    str = strtok(NULL,search);
+    set->parameter = str;
+    str = strtok(NULL,search);
+    set->value = str;
+    if(set->parameter!=NULL)
+        parameterToSet = set->parameter;
+    if(set->value!=NULL)
+        valueToSet = set->value;
+    free(set);
+    printf("user = %s\n",parameterToSet);
+    printf("pass = %s\n",valueToSet);
+}
+
 
 void parseUsernamePassword(char* string){
     Auth *auth = malloc(sizeof(Auth));
@@ -39,54 +58,53 @@ void parseUsernamePassword(char* string){
     if(auth->password!=NULL)
         pass = auth->password;
     free(auth);
+    printf("user = %s\n",usr);
+    printf("pass = %s\n",pass);
 }
 
 //verify authentification
 int authentificate(char* string ){
   parseUsernamePassword(string);
-  int iFileDescriptor = -1;
-  iFileDescriptor = open(FILE_PATH,O_RDONLY, 0400);
-  if(iFileDescriptor < 0) {
-      printf("\nError Opening Default Diagnostic Conf File\n");
-      return iFileDescriptor;
-  }  
-  
+
   FILE * ptrFile;
   FILE * ptrFile2;
   char line_user[256];
   char line_pass[256];
   int cur_line_user = 0;
   int cur_line_pass = 0;
-  ptrFile=fopen(FILE_PATH,"rt");
-  ptrFile2=fopen(FILE_PATH,"rt");
+  ptrFile=fopen(PASS_PATH,"rt");
+  ptrFile2=fopen(USER_PATH,"rt");
   if (NULL==ptrFile) {
       printf("Corrupted file READ\n");
       return -1;
   }
   while(fgets(line_pass, sizeof line_pass, ptrFile)!= NULL ) 
   {
-      if (cur_line_pass == 1) {
-           //line_pass[strlen(line_pass)-1] = '\0';
+      if (cur_line_pass == 0) {
+           line_pass[strlen(line_pass)-1] = '\0';
            finalPass = line_pass;
-           printf(" finalPass=%s \n", finalPass);
+           printf("\nfinal_Pass=%s\n", finalPass);
            break;
       }
       cur_line_pass++;
   }
   fclose(ptrFile);
+
   while(fgets(line_user, sizeof line_user, ptrFile2)!= NULL ) 
   {
       if (cur_line_user == 0) {
-           //line_user[strlen(line_user)-1] = '\0';
+           line_user[strlen(line_user)-1] = '\0';
            finalUser = line_user;
-           printf(" finalUser=%s \n", finalUser);
+           printf("final_User=%s\n", finalUser);
            break;
       }
       cur_line_user++;
   }
   
-  printf("L.Users=%d\n",strlen(usr));
+  printf("L.User=%d\n",strlen(usr));
   printf("L.finalUser=%d\n",strlen(finalUser));
+  printf("L.Pass=%d\n",strlen(pass));
+  printf("L.finalPass=%d\n",strlen(finalPass));
   fclose(ptrFile2);
   
   if((strcmp(usr,finalUser)) || (strcmp(pass,finalPass))){
@@ -95,6 +113,7 @@ int authentificate(char* string ){
   } else
         return -1;
 }
+
 //parse new old username
 void parseNewOldUsername(char* string){  
     NewOldUser *newOldUser = malloc(sizeof(NewOldUser));
@@ -136,21 +155,18 @@ void parseNewOldPassword(char* string){
 //parse new old password and rest the new one
 int resetPassword(char* string ){
   parseNewOldPassword(string);
-  printf("finalPassBefore=%s\n",finalPass);
   FILE * ptrFile;
   char line[40];
   int cur_line = 0;
-  ptrFile=fopen(FILE_PATH,"r");
+  ptrFile=fopen(PASS_PATH,"r");
   if (NULL==ptrFile) {
       printf("Corrupted file \n");
       return -1;
   }
-
-
   while(fgets(line,31,ptrFile)!= NULL ) /* read a line */
   {
-      if (cur_line == 1) {
-           line[strlen(line)] = '\0';
+      if (cur_line == 0) {
+           line[strlen(line)-1] = '\0';
            finalPass = line;
            printf(" finalPass=%s \n", finalPass);
            break;      
@@ -158,37 +174,18 @@ int resetPassword(char* string ){
         cur_line++;
   }
   fclose(ptrFile);
-  printf("finalPassBefore=%s\n",finalPass);
   printf("oldPass=%s\n",oldPass);
   printf("newPass=%s\n",newPass);
+  printf("L.new=%d\n",strlen(newPass));
   printf("oldPass=%d\n",strlen(oldPass));
   printf("finalPass=%d\n",strlen(finalPass));
  
-
-
   if((!strcmp(oldPass,finalPass))){
-    
-      FILE * ptrFile2;
-      char line_user[256];
-      int cur_line_user = 0;
-      ptrFile2=fopen(FILE_PATH,"rt");
-    
-      while(fgets(line_user, sizeof line_user, ptrFile2)!= NULL ) 
-      {
-          if (cur_line_user == 0) {
-              line_user[strlen(line_user)] = '\0';
-              finalUser = line_user;
-              printf(" finalUser=%s \n", finalUser);
-              break;
-          }
-          cur_line_user++;
-      }
-      fclose(ptrFile2);
-      
       FILE * ptrw;
-      ptrw=fopen(FILE_PATH,"w+");
+      ptrw=fopen(PASS_PATH,"w+");
+      printf("L.new=%d\n",strlen(newPass));
+      fprintf(ptrw,"%s\n\r",newPass);
 
-      fprintf(ptrw,"%s\n%s",finalUser,newPass);
       fclose(ptrw);
       return 0 ;
   } else{
@@ -203,7 +200,7 @@ int resetUsername(char* string ){
   FILE * ptrFile;
   char line[40];
   int cur_line = 0;
-  ptrFile=fopen(FILE_PATH,"r");
+  ptrFile=fopen(USER_PATH,"r");
   if (NULL==ptrFile) {
       printf("Corrupted file \n");
       return -1;
@@ -211,42 +208,31 @@ int resetUsername(char* string ){
   while(fgets(line,31,ptrFile)!= NULL ) /* read a line */
   {
       if (cur_line == 0) {
-      //     line[strlen(line)-1] = '\0';
+           line[strlen(line)-1] = '\0';
            finalUser = line;
-           //  sprintf(finalPass,"%s",line);
-             }
+           printf(" finalUser=%s \n", finalUser);
+           break;      
+      }
         cur_line++;
   }
   fclose(ptrFile);
-  
+  printf("oldUser=%s\n",oldUser);
+  printf("newUser=%s\n",newUser);
+  printf("L.new=%d\n",strlen(newUser));
+  printf("oldUser=%d\n",strlen(oldUser));
+  printf("finalUser=%d\n",strlen(finalUser));
+ 
   if((!strcmp(oldUser,finalUser))){
-      FILE * ptrFile;
-      char line_pass[256];
-      int cur_line_pass = 0;
-      ptrFile=fopen(FILE_PATH,"rt");
-    
-      while(fgets(line_pass, sizeof line_pass, ptrFile)!= NULL ) 
-      {
-          if (cur_line_pass == 0) {
-              //line_pass[strlen(line_pass)-1] = '\0';
-              finalPass = line_pass;
-              printf(" finalPass=%s \n", finalPass);
-              break;
-          }
-          cur_line_pass++;
-      }
-      fclose(ptrFile);
-      
       FILE * ptrw;
-      ptrw=fopen(FILE_PATH,"w+");
+      ptrw=fopen(USER_PATH,"w+");
+      printf("L.new=%d\n",strlen(newUser));
+      fprintf(ptrw,"%s\n\r",newUser);
 
-      //newUser[strlen(newUser)+1] = '\0';
-      fprintf(ptrw,"%s%s",newUser,finalPass);
       fclose(ptrw);
-      printf("finalPAfetr=%s\n",finalPass);  
       return 0 ;
   } else{
       printf("ERROR\n");
+     // free(finalUser); 
       return -1;
     }
 }
@@ -259,5 +245,3 @@ char* mg_str2pTEXT(struct mg_str *mgstr)
     text[mgstr->len] = '\0';
     return text;
 }
-
-

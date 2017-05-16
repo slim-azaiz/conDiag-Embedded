@@ -1,24 +1,22 @@
 CROSS_COMPILE=$(TOOLROOT)/bin/arm-TiVo-linux-gnueabi
 CC=$(CROSS_COMPILE)-gcc
 
-DESTDIR=$(TOOLROOT)/../dev-arm/tivo_root/bin/
-DESTDIR1= ../sc_rootfs/scbin
-TR69= $(SANDBOX)/../sdt_sagemcom/TR69
-LIBCAP_DIR=$(TR69)/libcap-2.25
+DESTDIR= ../sc_rootfs/scbin
+TR69_DIR= $(SANDBOX)/../sdt_sagemcom/TR69
+LIBCAP_DIR=$(TR69_DIR)/libcap-2.25
 
-CFLAGS += -g -W -Wall -Wextra -fPIC -rdynamic 
-CFLAGS += -I$(TR69)/dbus 
-CFLAGS += -I$(TR69)/sc-bus/include 
+CFLAGS += -Wall -O -O2 -fPIC -fstack-protector-all
+CFLAGS += -I$(TR69_DIR)/dbus 
+CFLAGS += -I$(TR69_DIR)/sc-bus/include 
 CFLAGS += -I$(LIBCAP_DIR)/libcap/include/
 CFLAGS += -I$(LIBCAP_DIR)/libcap/
+CFLAGS += -Iinclude/
 
-LDFLAGS += -L$(TR69)/libCommon 
+LDFLAGS += -L$(TR69_DIR)/libCommon 
 LDFLAGS += -ldbus-1
 LDFLAGS += -lsc_bus
 LDFLAGS += -L$(LIBCAP_DIR)/libcap/
 LDFLAGS += -lcap
-#LDFLAGS = 
-
 
 SOURCES=$(wildcard src/data/*.c src/my_server.c src/mongoose/*.c src/cjson/* src/utils/*.c )
 OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
@@ -27,12 +25,9 @@ PROG = bin/conDiag
 
 all: $(PROG)
 
-
 $(PROG): $(SOURCES)
-	  $(CC) $(SOURCES) -o $@ $(CFLAGS) $(LDFLAGS)
-
-		cp $(EXEC) $(PROG) $(DESTDIR)
-		cp $(EXEC) $(PROG) $(DESTDIR1)
+	$(CC) $(SOURCES) -o $@ $(CFLAGS) $(LDFLAGS)
+	cp $(EXEC) $(PROG) $(DESTDIR)
 
 # The Cleaner
 clean:
@@ -41,9 +36,7 @@ clean:
 
 # The Install
 install: all
-	#	install -d $(DESTDIR)/$(PREFIX)/lib/
-		cp $(EXEC) $(PROG) $(DESTDIR)
-		cp $(EXEC) $(PROG) $(DESTDIR1)
+	cp $(EXEC) $(PROG) $(DESTDIR)
 
 
 # The Checker

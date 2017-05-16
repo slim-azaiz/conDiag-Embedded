@@ -239,20 +239,45 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         mg_printf_http_chunk(nc, "WRONG COMMAND");
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       }
-    //set networkID
+    //set parametres
     } 
-    else if (strstr(mg_str2pTEXT(&hm->uri),"/networkID")) {
-      if(!parseCommand(mg_str2pTEXT(&hm->uri))){
-        //set valued
-        update_method_value(SET_NETWORK_ID, cmd);
-        //print message
-        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, "%s CLICKED \n",cmd);
+    else if (strstr(mg_str2pTEXT(&hm->uri),"/set")) {
+        parseParameterValue(mg_str2pTEXT(&hm->uri));
         printf("\n%s ",mg_str2pTEXT(&hm->uri));
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      } else {
+        
+        if (strcmp(parameterToSet,"NETWORK_ID")==0) {
+                update_method_value(SET_NETWORK_ID, valueToSet);
+            }
+        else if (strcmp(parameterToSet,"TCD_MODE")==0) {
+            update_method_value(SET_TCD_MODE, valueToSet);
+            get_nvmem_parametres(all_parametres);
+            mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+            cJSON *root = cJSON_CreateArray();
+            cJSON_AddItemToArray(root ,objects[0] = cJSON_CreateObject()); 
+            cJSON_AddStringToObject(objects[0], "value",all_parametres->members[43][0]);
+            cJSON_AddStringToObject(objects[0], "parameter",all_parametres->members[43][1]);
+            char* result = cJSON_Print(root);
+            mg_printf_http_chunk(nc, "{\"dataToSet\":%s}\n",result);
+        
+            mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+       
+        
+        } 
+        else if (strcmp(parameterToSet,"SI_MILTICAST_ADDRESS")==0) {
+            update_method_value(SET_SI_MILTICAST_ADDRESS, valueToSet);
+        } 
+        else if (strcmp(parameterToSet,"VM_INSTALLER_FREQUENCY")==0) {
+            update_method_value(SET_VM_INSTALLER_FREQUENCY, valueToSet);
+        } 
+        else if (strcmp(parameterToSet,"VM_INSTALLER_SYMBOLRATE")==0) {
+            update_method_value(SET_VM_INSTALLER_SYMBOLRATE, valueToSet);
+        } 
+        else if (strcmp(parameterToSet,"VM_INSTALLER_MODULATION")==0) {
+            update_method_value(SET_VM_INSTALLER_MODULATION, valueToSet);
+        } 
+        else {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, "WRONG COMMAND");
+        mg_printf_http_chunk(nc, "WRONG PARAMETER");
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       }
     }
@@ -260,65 +285,75 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
     else if (strstr(mg_str2pTEXT(&hm->uri),"diagnostic")) {
         //all parametres
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, "{\"diagnostics\":%s}\n",json(43,0));
+        //mg_printf_http_chunk(nc, "{\"diagnostics\":%s}\n",json(43,0));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
     }else if (strstr(mg_str2pTEXT(&hm->uri),"identification")) {
-        // stb_identification      
+    // stb_identification      
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //get_stb_identification_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"identification\":%s}\n",json(10,0));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
     }else if (strstr(mg_str2pTEXT(&hm->uri),"conditionalAccess")) {
-        //conditional_access
+    //conditional_access
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //get_conditional_access_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"conditional\":%s}\n",json(2,10));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
     }else if (strstr(mg_str2pTEXT(&hm->uri),"memory")) {
-        //memoire_data
+    //memoire_data
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //get_memory_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"memory\":%s}\n",json(4,14));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
      }else if (strstr(mg_str2pTEXT(&hm->uri),"loader")) {
-        //loader_data
+    //loader_data
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //get_loader_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"loader\":%s}\n",json(2,12));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
      }else if (strstr(mg_str2pTEXT(&hm->uri),"software")) {
-        //software_data
+    //software_data
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //get_software_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"software\":%s}\n",json(4,26));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
      }else if (strstr(mg_str2pTEXT(&hm->uri),"network")) {
-        //network_data
+    //network_data
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //get_network_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"network\":%s}\n",json(8,18));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
      }
     else if (strstr(mg_str2pTEXT(&hm->uri),"sysInfo")) {
-        //sys_info 
+    //sys_info 
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //get_sys_info_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"sysInfo\":%s}\n",json(13,30));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
     }
     else if (strstr(mg_str2pTEXT(&hm->uri),"nvmem")) {
-        //nvmem 
+    //nvmem 
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //get_nvmem_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"nvmem\":%s}\n",json(5,43));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
     }
     else if (strstr(mg_str2pTEXT(&hm->uri),"qamVirtualTunerStatus")) {
-        //virtualTtuner 
+    //virtualTtuner 
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //get_virtual_tuner_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"qamVirtualTunerStatus\":%s}\n",json(6,48));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
     }
     else if (strstr(mg_str2pTEXT(&hm->uri),"qamTunerStatus")) {
-        //tuner 
+     //tuner 
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        //get_tuner_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"qamTunerStatus\":%s}\n",json(18,54));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
     }
     else if (strstr(mg_str2pTEXT(&hm->uri),"realTime")) {
-      // dynamic parametres
+    // dynamic parametres
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         dynamic_parametres = malloc(sizeof(Dynamic_parametres));
         create_dynamic_parametres(dynamic_parametres); 
@@ -359,8 +394,22 @@ int main(void) {
   //drop_root_privileges();
   prctl (PR_SET_DUMPABLE, 0, 0, 0, 0);
   
-   create_all_parametres(all_parametres);
-  //control
+  create_all_parametres(all_parametres);
+
+  //load parametres
+  
+  get_stb_identification_parametres(all_parametres);
+  get_conditional_access_parametres(all_parametres);
+  get_memory_parametres(all_parametres);
+  get_loader_parametres(all_parametres);
+  get_software_parametres(all_parametres);
+  get_network_parametres(all_parametres);
+  get_nvmem_parametres(all_parametres);
+  get_tuner_parametres(all_parametres);
+  get_virtual_tuner_parametres(all_parametres);
+  get_sys_info_parametres(all_parametres);
+
+   //control
   create_control_data();
   //init server
   mg_mgr_init(&mgr, NULL);
