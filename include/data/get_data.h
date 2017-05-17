@@ -127,6 +127,7 @@ typedef struct Get_data
  
 
 void create_get_data();
+char* hexdec(const char *hex );
 void destroy_get_data();
 void set_method(Get_data *data,char* method);
 char* get_method(Get_data *data);

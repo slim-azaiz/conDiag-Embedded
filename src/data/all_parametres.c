@@ -1,4 +1,4 @@
-#include "../../include/data/all_parametres.h"
+#include "data/all_parametres.h"
 #include <stdio.h>
 
 

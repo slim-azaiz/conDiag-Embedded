@@ -6,7 +6,6 @@
 #define TCD_MODE_UNINITIALIZED	"0"
 #define TCD_MODE_QAM			"1"
 #define TCD_MODE_IP				"2"
-
 #define MODULATION_QAM_16		"16"
 #define MODULATION_QAM_32		"32"
 #define MODULATION_QAM_64		"64"
@@ -69,7 +68,16 @@ typedef struct All_parametres
     char* STB_totalPowerOff;
     char* Time_since_last_STB_boot_up;
 	char* Total_STB_Reboot;
-*/}All_parametres; 
-
+*/}All_parametres;
 
 void create_all_parametres(All_parametres *all_parametres);
+void get_stb_identification_parametres(All_parametres *all_parametres);
+void get_conditional_access_parametres(All_parametres *all_parametres);
+void get_memory_parametres(All_parametres *all_parametres);
+void get_loader_parametres(All_parametres *all_parametres);
+void get_software_parametres(All_parametres *all_parametres);
+void get_network_parametres(All_parametres *all_parametres);
+void get_nvmem_parametres(All_parametres *all_parametres);
+void get_tuner_parametres(All_parametres *all_parametres);
+void get_virtual_tuner_parametres(All_parametres *all_parametres);
+void get_sys_info_parametres(All_parametres *all_parametres);

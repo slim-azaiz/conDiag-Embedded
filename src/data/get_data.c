@@ -1,4 +1,4 @@
-#include "../../include/data/get_data.h"
+#include "data/get_data.h"
 
 void create_get_data()
 {	 

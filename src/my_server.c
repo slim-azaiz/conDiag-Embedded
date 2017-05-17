@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "dbus/dbus.h"
 #include "sc_bus.h"
-#include "../include/utils/utils.h"
+#include "utils/utils.h"
 
 #include <unistd.h>
 #include <stdlib.h> 
@@ -15,18 +15,39 @@
 #include "libcap.h"
 #include <assert.h>
 
-#define USER 	"diagnostic"
+/**********************************************************************************
+*						              DEFINES
+**********************************************************************************/
 
-//static
+#define USER 	"diagnostic"
+#define UID 1006
+#define GID 1006
+/*-----------------------------------------------------------------------------
+					STATIC VARIABLES       
+-----------------------------------------------------------------------------*/
 static const char* s_http_port = "8000";
 static struct mg_serve_http_opts s_http_server_opts;
 
 static All_parametres *all_parametres;
 static Dynamic_parametres *dynamic_parametres;
-static Set_parametres *set_parametres;
 
-//drop root privileges
-int drop_root_privileges_( const char * const user, size_t cap_nb, const cap_value_t * const cap_list ) 
+cJSON *objects[1];
+
+
+
+/***********************************************************************
+ *                     *** Copyright (C) 2017 SAGEMCOM SA ***
+ * Function name : drop_root_privileges
+ * Author        : AZAIZ SLIM
+ * Creation date : 2017-05-15
+ * Description   : listen  
+ * Return type   : int
+ * Argument      : ev: Out
+                   p:In
+                   mg_connection:In
+                   
+ **********************************************************************/
+int drop_root_privileges( const char * const user, size_t cap_nb, const cap_value_t * const cap_list ) 
 {
 	cap_t       caps;
 	cap_value_t cap_vals_list[CAP_LAST_CAP+2];
@@ -112,60 +133,19 @@ int drop_root_privileges_( const char * const user, size_t cap_nb, const cap_val
 	return 0;
 }
 
-/* User ID to drop to */
-#define UID 1006
-/* Group ID to drop to */
-#define GID 1006
 
-int drop_root_privileges(void)
-{
-	uid_t real, eff, saved;
-	uid_t uid = (uid_t)UID;
-	gid_t gid = (gid_t)GID;
-	printf("Running as UID %u (effective %u) GID %u (effective %u)\n", getuid(), geteuid(), getgid(), getegid());
-
-	if (setresgid(gid, gid, gid) != 0)
-	{
-		printf("Failed changing GID to %d with error \n", gid); 
-		return -1;
-	}
-	
-	if (setresuid(uid, uid, uid) != 0)
-	{
-		printf("Failed changing UID to %d with error \n", uid);
-		return -1;
-	}
-	
-	if (getresuid(&real, &eff, &saved) != 0)
-	{
-		printf("Failed reading UID with error \n");
-		return -1;
-	}
-	
-	if (real != uid || eff != uid || saved != uid)
-	{
-		printf("UID sanity check failed\n");
-		return -1;
-	}
-
-	if (getresgid(&real, &eff, &saved) != 0)
-	{
-		printf("Failed reading GID with error \n");
-		return -1;
-	}
-	
-	if (real != gid || eff != gid || saved != gid)
-	{
-		printf("GID sanity check failed\n");
-		return -1;
-	}
-	printf("Dropped root privileges. Now running as UID %u GID %u\n", uid, gid);
-	return 0;
-}
-
-//static Set_data *data;
-cJSON *objects[1];
-
+/***********************************************************************
+ *                     *** Copyright (C) 2017 SAGEMCOM SA ***
+ * Function name : ev_handler
+ * Author        : AZAIZ SLIM
+ * Creation date : 2017-05-15
+ * Description   : listen  
+ * Return type   : void
+ * Argument      : ev: Out
+                   p:In
+                   mg_connection:In
+                   
+ **********************************************************************/
 char* json(int nb,int index){
     int i;
     cJSON *root = cJSON_CreateArray();
@@ -178,78 +158,91 @@ char* json(int nb,int index){
 }
 
 
-//my event handler
+/***********************************************************************
+ *                     *** Copyright (C) 2017 SAGEMCOM SA ***
+ * Function name : ev_handler
+ * Author        : AZAIZ SLIM
+ * Creation date : 2017-05-15
+ * Description   : listen  
+ * Return type   : void
+ * Argument      : ev: Out
+                   p:In
+                   mg_connection:In
+                   
+ **********************************************************************/
 static void ev_handler(struct mg_connection *nc, int ev, void *p) {
   struct http_message *hm = (struct http_message *) p;
   if (ev == MG_EV_HTTP_REQUEST) {
-    
     //authentification
     if (strstr(mg_str2pTEXT(&hm->uri),"/authentificate")) {
-        printf("result = %d",authentificate(mg_str2pTEXT(&hm->uri)));
-      if(authentificate(mg_str2pTEXT(&hm->uri))){
-        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        printf("%s\nsuccess\n",mg_str2pTEXT(&hm->uri));
-        mg_printf_http_chunk(nc, "SUCCESS");
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      } else {
-        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        printf("%s\nERROR\n",mg_str2pTEXT(&hm->uri));
-        mg_printf_http_chunk(nc, "WRONG USERNAME OR PASSWORD");
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      }
+        Auth *auth = malloc(sizeof(Auth));
+        parseUsernamePassword(mg_str2pTEXT(&hm->uri),auth);
+        //printf("result = %d",authentificate(mg_str2pTEXT(&hm->uri)));
+      if(authentificate(auth)){
+         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+         printf("%s\nsuccess\n",mg_str2pTEXT(&hm->uri));
+         mg_printf_http_chunk(nc, "SUCCESS");
+         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+       } else {
+         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+         printf("%s\nERROR\n",mg_str2pTEXT(&hm->uri));
+         mg_printf_http_chunk(nc, "WRONG USERNAME OR PASSWORD");
+         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+       }
+       free(auth);
     }
     //resetPassword
     else if (strstr(mg_str2pTEXT(&hm->uri),"/resetPassword")) {
-      if(!resetPassword(mg_str2pTEXT(&hm->uri))){
-      
-        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, "SUCCESS");
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      } else {
-        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, "WRONG OLD PASSWORD");
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      }
+        NewOldParameter *newOldParameter = malloc(sizeof(NewOldParameter));
+        parseNewOldParameter(mg_str2pTEXT(&hm->uri),newOldParameter);
+        if(!resetPassword(newOldParameter)){
+            mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+            mg_printf_http_chunk(nc, "SUCCESS");
+            mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        } else {
+            mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+            mg_printf_http_chunk(nc, "WRONG OLD PASSWORD");
+            mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        }
+        free(newOldParameter);
     }
     //resetUsername
     else if (strstr(mg_str2pTEXT(&hm->uri),"/resetUsername")) {
-      if(!resetUsername(mg_str2pTEXT(&hm->uri))){
-      
-        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, "SUCCESS");
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      } else {
-        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, "WRONG OLD USERNAME");
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      }
+        NewOldParameter *newOldParameter = malloc(sizeof(NewOldParameter));
+        parseNewOldParameter(mg_str2pTEXT(&hm->uri),newOldParameter);
+        if(!resetUsername(newOldParameter)){ 
+            mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+            mg_printf_http_chunk(nc, "SUCCESS");
+            mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        } else {
+            mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+            mg_printf_http_chunk(nc, "WRONG OLD USERNAME");
+            mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        }
+        free(newOldParameter);
     }
     //control
     else if (strstr(mg_str2pTEXT(&hm->uri),"/control")) {
-      if(!parseCommand(mg_str2pTEXT(&hm->uri))){
+        //char *controlKey = (char*) malloc(12*sizeof(char));
+        char *controlKey =  malloc(sizeof(char)*50);
+        parseCommand(mg_str2pTEXT(&hm->uri),controlKey);
         //execute command
-        update_method_value(SET_IR_INPUT_ID, cmd);
+        update_method_value(SET_IR_INPUT_ID, controlKey);
         //print message
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-       // mg_printf_http_chunk(nc, "%s CLICKED \nresultat=%d",cmd,ret);
         printf("\n%s ",mg_str2pTEXT(&hm->uri));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      } else {
-        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_printf_http_chunk(nc, "WRONG COMMAND");
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      }
-    //set parametres
+        free(controlKey);
     } 
+    //set parametres
     else if (strstr(mg_str2pTEXT(&hm->uri),"/set")) {
-        parseParameterValue(mg_str2pTEXT(&hm->uri));
-        printf("\n%s ",mg_str2pTEXT(&hm->uri));
-        
-        if (strcmp(parameterToSet,"NETWORK_ID")==0) {
-                update_method_value(SET_NETWORK_ID, valueToSet);
+        NewOldParameter *newOldParameter = malloc(sizeof(NewOldParameter));
+        parseNewOldParameter(mg_str2pTEXT(&hm->uri),newOldParameter);
+        if (strcmp(newOldParameter->oldParameter,"NETWORK_ID")==0) {
+                update_method_value(SET_NETWORK_ID, newOldParameter->newParameter);
             }
-        else if (strcmp(parameterToSet,"TCD_MODE")==0) {
-            update_method_value(SET_TCD_MODE, valueToSet);
+        else if (strcmp(newOldParameter->oldParameter,"TCD_MODE")==0) {
+            update_method_value(SET_TCD_MODE, newOldParameter->newParameter);
             get_nvmem_parametres(all_parametres);
             mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
             cJSON *root = cJSON_CreateArray();
@@ -263,23 +256,24 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
        
         
         } 
-        else if (strcmp(parameterToSet,"SI_MILTICAST_ADDRESS")==0) {
-            update_method_value(SET_SI_MILTICAST_ADDRESS, valueToSet);
+        else if (strcmp(newOldParameter->oldParameter,"SI_MILTICAST_ADDRESS")==0) {
+            update_method_value(SET_SI_MILTICAST_ADDRESS, newOldParameter->newParameter);
         } 
-        else if (strcmp(parameterToSet,"VM_INSTALLER_FREQUENCY")==0) {
-            update_method_value(SET_VM_INSTALLER_FREQUENCY, valueToSet);
+        else if (strcmp(newOldParameter->oldParameter,"VM_INSTALLER_FREQUENCY")==0) {
+            update_method_value(SET_VM_INSTALLER_FREQUENCY, newOldParameter->newParameter);
         } 
-        else if (strcmp(parameterToSet,"VM_INSTALLER_SYMBOLRATE")==0) {
-            update_method_value(SET_VM_INSTALLER_SYMBOLRATE, valueToSet);
+        else if (strcmp(newOldParameter->oldParameter,"VM_INSTALLER_SYMBOLRATE")==0) {
+            update_method_value(SET_VM_INSTALLER_SYMBOLRATE, newOldParameter->newParameter);
         } 
-        else if (strcmp(parameterToSet,"VM_INSTALLER_MODULATION")==0) {
-            update_method_value(SET_VM_INSTALLER_MODULATION, valueToSet);
+        else if (strcmp(newOldParameter->oldParameter,"VM_INSTALLER_MODULATION")==0) {
+            update_method_value(SET_VM_INSTALLER_MODULATION, newOldParameter->newParameter);
         } 
         else {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         mg_printf_http_chunk(nc, "WRONG PARAMETER");
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
       }
+        free(newOldParameter);
     }
     //diagnostic static parametres
     else if (strstr(mg_str2pTEXT(&hm->uri),"diagnostic")) {
@@ -380,24 +374,23 @@ int main(void) {
   struct mg_connection *nc;
   //all parametres
   all_parametres = malloc(sizeof(All_parametres));
-  printf("\nnumber = %s\n",hexdec("00000010")); 
   
   //drop root priveleges
-
   cap_value_t cap_vals_list[4];
   cap_vals_list[0] = CAP_IPC_LOCK;
   cap_vals_list[1] = CAP_IPC_OWNER;
   cap_vals_list[2] = CAP_NET_RAW;
   cap_vals_list[3] = CAP_NET_BIND_SERVICE;
- 
-  drop_root_privileges_(USER,4,cap_vals_list);
-  //drop_root_privileges();
+  drop_root_privileges(USER,4,cap_vals_list);
   prctl (PR_SET_DUMPABLE, 0, 0, 0, 0);
   
-  create_all_parametres(all_parametres);
-
-  //load parametres
+ 
   
+  create_all_parametres(all_parametres);
+  //control
+  Set_data *data = malloc(sizeof(Set_data));
+  create_set_data();
+  //load parametres
   get_stb_identification_parametres(all_parametres);
   get_conditional_access_parametres(all_parametres);
   get_memory_parametres(all_parametres);
@@ -408,9 +401,7 @@ int main(void) {
   get_tuner_parametres(all_parametres);
   get_virtual_tuner_parametres(all_parametres);
   get_sys_info_parametres(all_parametres);
-
-   //control
-  create_control_data();
+  
   //init server
   mg_mgr_init(&mgr, NULL);
   printf("Starting web server on port %s\n", s_http_port);
@@ -425,7 +416,6 @@ int main(void) {
   mg_set_protocol_http_websocket(nc);
   //s_http_server_opts.document_root = ".";  // Serve current directory
   //s_http_server_opts.enable_directory_listing = "yes";
-
   for (;;) {
     mg_mgr_poll(&mgr, 1000);
   }

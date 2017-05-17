@@ -1,243 +1,206 @@
-#include "../../include/utils/utils.h"
-
-//vars
-char* usr;
-char* pass;
-char* oldPass;
-char* newPass;
-char* oldUser;
-char* newUser;
-char* finalPass;
-char* finalUser;
+#include "utils/utils.h"
 
 
-//parse command of control
-int parseCommand(char* string){
-    cmd="";
+/***********************************************************************
+ *                     *** Copyright (C) 2017 SAGEMCOM SA ***
+ * Function name : parseCommand
+ * Author        : AZAIZ SLIM
+ * Creation date : 2017-05-15
+ * Description   : parse command of control 
+ * Return type   : int
+ * Argument      : control_key: Out
+                   uri:In
+                   
+ **********************************************************************/
+int parseCommand(char* uri,char* control_key){
     char* search = "/";
     char* str = "";
-    str = strtok(string,search);
+    str = strtok(uri,search);
     str = strtok(NULL,search);
-    cmd = str;
+    control_key = str;
     return 0;
 }
-void parseParameterValue(char* string){
-    Set *set = malloc(sizeof(Set));
-    valueToSet="";
-    parameterToSet="";
+
+/***********************************************************************
+ *                     *** Copyright (C) 2017 SAGEMCOM SA ***
+ * Function name : parseUsernamePassword
+ * Author        : AZAIZ SLIM
+ * Creation date : 2017-05-15
+ * Description   : parse the username and password from uri 
+ * Return type   : void
+ * Argument      : auth: Out
+                   uri:In
+                   
+ **********************************************************************/
+void parseUsernamePassword(char* uri,Auth *auth){
     char* search = "/";
     char* str = "";
-    str = strtok(string,search);
-    str = strtok(NULL,search);
-    set->parameter = str;
-    str = strtok(NULL,search);
-    set->value = str;
-    if(set->parameter!=NULL)
-        parameterToSet = set->parameter;
-    if(set->value!=NULL)
-        valueToSet = set->value;
-    free(set);
-    printf("user = %s\n",parameterToSet);
-    printf("pass = %s\n",valueToSet);
-}
-
-
-void parseUsernamePassword(char* string){
-    Auth *auth = malloc(sizeof(Auth));
-    usr="";
-    pass="";
-    char* search = "/";
-    char* str = "";
-    str = strtok(string,search);
+    str = strtok(uri,search);
     str = strtok(NULL,search);
     auth->username = str;
     str = strtok(NULL,search);
     auth->password = str;
-    if(auth->username!=NULL)
-        usr = auth->username;
-    if(auth->password!=NULL)
-        pass = auth->password;
-    free(auth);
-    printf("user = %s\n",usr);
-    printf("pass = %s\n",pass);
+    printf("user = %s\n",auth->username);
+    printf("pass = %s\n",auth->password);
 }
-
-//verify authentification
-int authentificate(char* string ){
-  parseUsernamePassword(string);
-
-  FILE * ptrFile;
-  FILE * ptrFile2;
+/***********************************************************************
+ *                     *** Copyright (C) 2017 SAGEMCOM SA ***
+ * Function name : parseNewOldParameter
+ * Author        : AZAIZ SLIM
+ * Creation date : 2017-05-15
+ * Description   : parse the arguments posted from uri 
+ * Return type   : void
+ * Argument      : newOldParameter: Out
+                   uri:In
+                   
+ **********************************************************************/
+void parseNewOldParameter(char* uri,NewOldParameter *newOldParameter){
+    char* search = "/";
+    char* str = "";
+    str = strtok(uri,search);
+    str = strtok(NULL,search);
+    newOldParameter->oldParameter = str;
+    str = strtok(NULL,search);
+    newOldParameter->newParameter = str;
+    printf("oldParameter = %s\n",newOldParameter->oldParameter);
+    printf("newParameter = %s\n",newOldParameter->newParameter);
+}
+/***********************************************************************
+ *                     *** Copyright (C) 2017 SAGEMCOM SA ***
+ * Function name : getUsernamePassword
+ * Author        : AZAIZ SLIM
+ * Creation date : 2017-05-15
+ * Description   : get username and password from USERNAME and PASSWORD 
+ * Return type   : int
+ * Argument      : auth: Out
+                   
+ **********************************************************************/
+int getUsernamePassword(Auth* auth){
+  FILE * ptrFileUsername;
+  FILE * ptrFilePassword;
   char line_user[256];
   char line_pass[256];
   int cur_line_user = 0;
   int cur_line_pass = 0;
-  ptrFile=fopen(PASS_PATH,"rt");
-  ptrFile2=fopen(USER_PATH,"rt");
-  if (NULL==ptrFile) {
+  ptrFileUsername=fopen(PASS_PATH,"rt");
+  ptrFilePassword=fopen(USER_PATH,"rt");
+  if (NULL==ptrFileUsername) {
       printf("Corrupted file READ\n");
       return -1;
   }
-  while(fgets(line_pass, sizeof line_pass, ptrFile)!= NULL ) 
+  while(fgets(line_pass, sizeof line_pass, ptrFileUsername)!= NULL ) 
   {
       if (cur_line_pass == 0) {
            line_pass[strlen(line_pass)-1] = '\0';
-           finalPass = line_pass;
-           printf("\nfinal_Pass=%s\n", finalPass);
+           auth->password = line_pass;
+           printf("\nfinal_Pass=%s\n", auth->password);
            break;
       }
       cur_line_pass++;
   }
-  fclose(ptrFile);
+  fclose(ptrFileUsername);
 
-  while(fgets(line_user, sizeof line_user, ptrFile2)!= NULL ) 
+  while(fgets(line_user, sizeof line_user, ptrFilePassword)!= NULL ) 
   {
       if (cur_line_user == 0) {
            line_user[strlen(line_user)-1] = '\0';
-           finalUser = line_user;
-           printf("final_User=%s\n", finalUser);
+           auth->username = line_user;
+           printf("final_User=%s\n", auth->username);
            break;
       }
       cur_line_user++;
   }
   
-  printf("L.User=%d\n",strlen(usr));
-  printf("L.finalUser=%d\n",strlen(finalUser));
-  printf("L.Pass=%d\n",strlen(pass));
-  printf("L.finalPass=%d\n",strlen(finalPass));
-  fclose(ptrFile2);
-  
-  if((strcmp(usr,finalUser)) || (strcmp(pass,finalPass))){
-      return 0 ;
+  printf("L.finalUser=%d\n",strlen(auth->username));
+  printf("L.finalPass=%d\n",strlen(auth->password));
+  fclose(ptrFilePassword);
+  return 0 ;
     
-  } else
+}
+
+/***********************************************************************
+ *                     *** Copyright (C) 2017 SAGEMCOM SA ***
+ * Function name : authentificate
+ * Author        : AZAIZ SLIM
+ * Creation date : 2017-05-15
+ * Description   : verify authentification 
+ * Return type   : int
+ * Argument      : auth: Out
+                   
+ **********************************************************************/
+int authentificate(Auth* auth){
+    Auth* finalAuth = malloc(sizeof(Auth));
+    getUsernamePassword(finalAuth);
+    if((strcmp(auth->username,finalAuth->username)) || (strcmp(auth->password,finalAuth->password))){
+        return 0 ;
+    } else
         return -1;
 }
 
-//parse new old username
-void parseNewOldUsername(char* string){  
-    NewOldUser *newOldUser = malloc(sizeof(NewOldUser));
-    oldUser="";
-    newUser="";
-    char* search = "/";
-    char* str = "";
-
-    str = strtok(string,search);
-    str = strtok(NULL,search);
-    newOldUser->oldUser = str;
-    str = strtok(NULL,search);
-    newOldUser->newUser = str;
-    if(newOldUser->oldUser!=NULL)
-      oldUser = newOldUser->oldUser;
-    if(newOldUser->newUser!=NULL)
-      newUser = newOldUser->newUser;
-    free(newOldUser);
-}
-//parse new old password
-void parseNewOldPassword(char* string){  
-    NewOldPass *newOldPass = malloc(sizeof(NewOldPass));
-    oldPass="";
-    newPass="";
-    char* search = "/";
-    char* str = "";
-
-    str = strtok(string,search);
-    str = strtok(NULL,search);
-    newOldPass->oldPass = str;
-    str = strtok(NULL,search);
-    newOldPass->newPass = str;
-    if(newOldPass->oldPass!=NULL)
-      oldPass = newOldPass->oldPass;
-    if(newOldPass->newPass!=NULL)
-      newPass = newOldPass->newPass;
-    free(newOldPass);
-}
-//parse new old password and rest the new one
-int resetPassword(char* string ){
-  parseNewOldPassword(string);
-  FILE * ptrFile;
-  char line[40];
-  int cur_line = 0;
-  ptrFile=fopen(PASS_PATH,"r");
-  if (NULL==ptrFile) {
-      printf("Corrupted file \n");
-      return -1;
-  }
-  while(fgets(line,31,ptrFile)!= NULL ) /* read a line */
-  {
-      if (cur_line == 0) {
-           line[strlen(line)-1] = '\0';
-           finalPass = line;
-           printf(" finalPass=%s \n", finalPass);
-           break;      
-      }
-        cur_line++;
-  }
-  fclose(ptrFile);
-  printf("oldPass=%s\n",oldPass);
-  printf("newPass=%s\n",newPass);
-  printf("L.new=%d\n",strlen(newPass));
-  printf("oldPass=%d\n",strlen(oldPass));
-  printf("finalPass=%d\n",strlen(finalPass));
+/***********************************************************************
+ *                     *** Copyright (C) 2017 SAGEMCOM SA ***
+ * Function name : newOldPassword
+ * Author        : AZAIZ SLIM
+ * Creation date : 2017-05-15
+ * Description   : parse new,old password and rest the new one 
+ * Return type   : int
+ * Argument      : newOldPassword: Out
+                   
+ **********************************************************************/
+int resetPassword(NewOldParameter* newOldPassword){
+    Auth* finalAuth = malloc(sizeof(Auth));
+    getUsernamePassword(finalAuth);
  
-  if((!strcmp(oldPass,finalPass))){
-      FILE * ptrw;
-      ptrw=fopen(PASS_PATH,"w+");
-      printf("L.new=%d\n",strlen(newPass));
-      fprintf(ptrw,"%s\n\r",newPass);
-
-      fclose(ptrw);
-      return 0 ;
-  } else{
-      printf("ERROR\n");
-     // free(finalUser); 
-      return -1;
+    if((!strcmp(newOldPassword->oldParameter,finalAuth->password))){
+        FILE * ptrw;
+        ptrw=fopen(PASS_PATH,"w+");
+        fprintf(ptrw,"%s\n\r",newOldPassword->newParameter);
+        fclose(ptrw);
+        free(finalAuth);
+        return 0 ;
+    } else{
+        free(finalAuth);
+        printf("ERROR\n");
+        return -1;
     }
 }
-//parse new old usernme and reset the new one
-int resetUsername(char* string ){
-  parseNewOldUsername(string);
-  FILE * ptrFile;
-  char line[40];
-  int cur_line = 0;
-  ptrFile=fopen(USER_PATH,"r");
-  if (NULL==ptrFile) {
-      printf("Corrupted file \n");
-      return -1;
-  }
-  while(fgets(line,31,ptrFile)!= NULL ) /* read a line */
-  {
-      if (cur_line == 0) {
-           line[strlen(line)-1] = '\0';
-           finalUser = line;
-           printf(" finalUser=%s \n", finalUser);
-           break;      
-      }
-        cur_line++;
-  }
-  fclose(ptrFile);
-  printf("oldUser=%s\n",oldUser);
-  printf("newUser=%s\n",newUser);
-  printf("L.new=%d\n",strlen(newUser));
-  printf("oldUser=%d\n",strlen(oldUser));
-  printf("finalUser=%d\n",strlen(finalUser));
- 
-  if((!strcmp(oldUser,finalUser))){
-      FILE * ptrw;
-      ptrw=fopen(USER_PATH,"w+");
-      printf("L.new=%d\n",strlen(newUser));
-      fprintf(ptrw,"%s\n\r",newUser);
-
-      fclose(ptrw);
-      return 0 ;
-  } else{
-      printf("ERROR\n");
-     // free(finalUser); 
-      return -1;
+/***********************************************************************
+ *                     *** Copyright (C) 2017 SAGEMCOM SA ***
+ * Function name : resetUsername
+ * Author        : AZAIZ SLIM
+ * Creation date : 2017-05-15
+ * Description   : parse new,old usernme and reset the new one
+ * Return type   : int
+ * Argument      : newOldUsername: Out
+                   
+ **********************************************************************/
+int resetUsername(NewOldParameter* newOldUsername){
+    Auth* finalAuth = malloc(sizeof(Auth));
+    getUsernamePassword(finalAuth);
+    if((!strcmp(newOldUsername->oldParameter,finalAuth->username))){
+        FILE * ptrw;
+        ptrw=fopen(USER_PATH,"w+");
+        fprintf(ptrw,"%s\n\r",newOldUsername->newParameter);
+        fclose(ptrw);
+        free(finalAuth);
+        return 0 ;
+    } else{
+        printf("ERROR\n");
+        free(finalAuth);
+        return -1;
     }
 }
 
-//convert mg_str to char *
+/***********************************************************************
+ *                     *** Copyright (C) 2017 SAGEMCOM SA ***
+ * Function name : mg_str2pTEXT
+ * Author        : AZAIZ SLIM
+ * Creation date : 2017-05-15
+ * Description   : convert mg_str to char * 
+ * Return type   : char*
+ * Argument      : mgstr:In
+ **********************************************************************/
+
 char* mg_str2pTEXT(struct mg_str *mgstr)
 {
     char* text = (char*) malloc(mgstr->len + 1);

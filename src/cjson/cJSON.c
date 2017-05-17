@@ -33,7 +33,7 @@
 #include <ctype.h>
 #pragma GCC visibility pop
 
-#include "../../include/cjson/cJSON.h"
+#include "cjson/cJSON.h"
 
 /* define our own boolean type */
 #define true ((cJSON_bool)1)
