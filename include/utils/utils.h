@@ -16,16 +16,19 @@
 **********************************************************************************/
 #define PASS_PATH "/volatile/sagem/diagnostic/PASSWORD" 
 #define USER_PATH "/volatile/sagem/diagnostic/USERNAME"
+#define RESULT_SUCCESS						0
+#define RESULT_ERROR						(-1)
+#define MAX_USERNAME_PASSWORD_LENGTH		20
 /**********************************************************************************
 *						              STRUCTURES
 **********************************************************************************/
 typedef struct Auth{
-    char* username;
-    char* password;
+    char username[20];
+    char password[20];
 }Auth;
 typedef struct NewOldParameter{
-    char* oldParameter;
-    char* newParameter;
+    char* oldParameter[20];
+    char* newParameter(20];
 }NewOldParameter;
 
 
@@ -34,7 +37,7 @@ typedef struct NewOldParameter{
 **********************************************************************************/
 int authentificate(Auth* auth);
 char* mg_str2pTEXT(struct mg_str *mgstr);
-int parseCommand(char* uri,char* control_key);
+void parseCommand(char* uri,char* control_key);
 void parseNewOldParameter(char* uri,NewOldParameter* newOldPassword);
 void parseUsernamePassword(char* uri, Auth* auth);
 int resetPassword(NewOldParameter*);

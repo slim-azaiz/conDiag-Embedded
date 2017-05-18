@@ -2,7 +2,6 @@ CROSS_COMPILE=$(TOOLROOT)/bin/arm-TiVo-linux-gnueabi
 CC=$(CROSS_COMPILE)-gcc
 
 DESTDIR= ../sc_rootfs/scbin
-DESTDIR1= $(TOOLROOT)/../dev-arm/tivo_root/bin/
 TR69_DIR= $(SANDBOX)/../sdt_sagemcom/TR69
 LIBCAP_DIR=$(TR69_DIR)/libcap-2.25
 
@@ -29,7 +28,6 @@ all: $(PROG)
 $(PROG): $(SOURCES)
 	$(CC) $(SOURCES) -o $@ $(CFLAGS) $(LDFLAGS)
 	cp $(EXEC) $(PROG) $(DESTDIR)
-	cp $(EXEC) $(PROG) $(DESTDIR1)
 # The Cleaner
 clean:
 	rm -f  $(EXEC) $(PROG)

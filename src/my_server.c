@@ -20,33 +20,21 @@
 **********************************************************************************/
 
 #define USER 	"diagnostic"
-#define UID 1006
-#define GID 1006
+//#define UID 1006
+//#define GID 1006
 /*-----------------------------------------------------------------------------
 					STATIC VARIABLES       
 -----------------------------------------------------------------------------*/
-static const char* s_http_port = "8000";
-static struct mg_serve_http_opts s_http_server_opts;
+static const char* s_http_port = "8000"; /*  define*/
+static struct mg_serve_http_opts s_http_server_opts;/* tester local si non global*/
 
 static All_parametres *all_parametres;
 static Dynamic_parametres *dynamic_parametres;
 
-cJSON *objects[1];
+cJSON *objects[1];//supprimer
 
 
 
-/***********************************************************************
- *                     *** Copyright (C) 2017 SAGEMCOM SA ***
- * Function name : drop_root_privileges
- * Author        : AZAIZ SLIM
- * Creation date : 2017-05-15
- * Description   : listen  
- * Return type   : int
- * Argument      : ev: Out
-                   p:In
-                   mg_connection:In
-                   
- **********************************************************************/
 int drop_root_privileges( const char * const user, size_t cap_nb, const cap_value_t * const cap_list ) 
 {
 	cap_t       caps;
@@ -139,12 +127,10 @@ int drop_root_privileges( const char * const user, size_t cap_nb, const cap_valu
  * Function name : ev_handler
  * Author        : AZAIZ SLIM
  * Creation date : 2017-05-15
- * Description   : listen  
+ * Description   : assign cjonn objects  
  * Return type   : void
- * Argument      : ev: Out
-                   p:In
-                   mg_connection:In
-                   
+ * Argument      : nb:In
+                   index:In
  **********************************************************************/
 char* json(int nb,int index){
     int i;
@@ -163,7 +149,10 @@ char* json(int nb,int index){
  * Function name : ev_handler
  * Author        : AZAIZ SLIM
  * Creation date : 2017-05-15
- * Description   : listen  
+ * Description   : Each connection has an event handler function 
+                    associated with it. Event handler is the key element
+                    of the Mongoose application, since it defines the
+                    application's behaviour.  
  * Return type   : void
  * Argument      : ev: Out
                    p:In
@@ -175,7 +164,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
   if (ev == MG_EV_HTTP_REQUEST) {
     //authentification
     if (strstr(mg_str2pTEXT(&hm->uri),"/authentificate")) {
-        Auth *auth = malloc(sizeof(Auth));
+        Auth auth;
         parseUsernamePassword(mg_str2pTEXT(&hm->uri),auth);
         //printf("result = %d",authentificate(mg_str2pTEXT(&hm->uri)));
       if(authentificate(auth)){
@@ -189,12 +178,16 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
          mg_printf_http_chunk(nc, "WRONG USERNAME OR PASSWORD");
          mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
        }
-       free(auth);
+      // free(auth);
     }
     //resetPassword
     else if (strstr(mg_str2pTEXT(&hm->uri),"/resetPassword")) {
+		char* username;
+		char* password;
+		
         NewOldParameter *newOldParameter = malloc(sizeof(NewOldParameter));
-        parseNewOldParameter(mg_str2pTEXT(&hm->uri),newOldParameter);
+       // parseNewOldParameter(mg_str2pTEXT(&hm->uri),newOldParameter);
+        parseNewOldParameter(mg_str2pTEXT(&hm->uri),username,password);
         if(!resetPassword(newOldParameter)){
             mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
             mg_printf_http_chunk(nc, "SUCCESS");
@@ -204,11 +197,15 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
             mg_printf_http_chunk(nc, "WRONG OLD PASSWORD");
             mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
         }
+        if (username != NULL)
+        free(username)
+        if (password != NULL)
+        free(password)
         free(newOldParameter);
     }
     //resetUsername
     else if (strstr(mg_str2pTEXT(&hm->uri),"/resetUsername")) {
-        NewOldParameter *newOldParameter = malloc(sizeof(NewOldParameter));
+        NewOldParameter newOldParameter;
         parseNewOldParameter(mg_str2pTEXT(&hm->uri),newOldParameter);
         if(!resetUsername(newOldParameter)){ 
             mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
@@ -219,22 +216,23 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
             mg_printf_http_chunk(nc, "WRONG OLD USERNAME");
             mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
         }
-        free(newOldParameter);
+       // free(newOldParameter);
     }
     //control
     else if (strstr(mg_str2pTEXT(&hm->uri),"/control")) {
         //char *controlKey = (char*) malloc(12*sizeof(char));
         char *controlKey =  malloc(sizeof(char)*50);
-        parseCommand(mg_str2pTEXT(&hm->uri),controlKey);
+        parseCommand(mg_str2pTEXT(&hm->uri), controlKey);
         //execute command
         update_method_value(SET_IR_INPUT_ID, controlKey);
         //print message
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        printf("\n%s ",mg_str2pTEXT(&hm->uri));
+        printf("\n%s ",controlKey);
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
         free(controlKey);
     } 
     //set parametres
+    #if 0
     else if (strstr(mg_str2pTEXT(&hm->uri),"/set")) {
         NewOldParameter *newOldParameter = malloc(sizeof(NewOldParameter));
         parseNewOldParameter(mg_str2pTEXT(&hm->uri),newOldParameter);
@@ -275,11 +273,11 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
       }
         free(newOldParameter);
     }
+    #endif
     //diagnostic static parametres
     else if (strstr(mg_str2pTEXT(&hm->uri),"diagnostic")) {
         //all parametres
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        //mg_printf_http_chunk(nc, "{\"diagnostics\":%s}\n",json(43,0));
         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
     }else if (strstr(mg_str2pTEXT(&hm->uri),"identification")) {
     // stb_identification      
@@ -367,8 +365,35 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 }
 
 
-//main
-int main(void) {
+ /*******************************************************************
+* NAME :            int main()
+*
+* DESCRIPTION :     Entry function of conDiag program
+*
+* INPUTS :
+*       PARAMETERS:
+*           None
+* OUTPUTS :
+*       PARAMETERS:
+*           None
+*       RETURN :
+*            Type:   int                    Error code:
+*            Values: "-1"             		If one of the called function failed
+*                    "0"                    Success            			
+* PROCESS :
+*                   [1]  Drop all privileges except the CAP_IPC_LOCK/CAP_IPC_OWNER/CAP_DAC_OVERRIDE/CAP_SETGID/CAP_SETUID 
+* 					     privileges for conDiag (Container/NASC related requirement)
+*                   [2]  Init first sc_bus (dbus based library developped by Sagemcom)
+*                   [3]  Init second sc_bus for exchange with TR69 (dbus based library developped by Sagemcom)
+*                   [4]  Gather diagnostic parametres from Gather program and assign them to json objects 
+*                   [5]  Init Mongoose web server 
+*                   [6]  Set  diagnostic parametres if asked
+*                   [7]  Infinit loop to handle other process requests
+* 					[8] Un-init
+*
+* NOTES :           
+*/
+int main() {
   
   struct mg_mgr mgr;
   struct mg_connection *nc;
@@ -385,11 +410,10 @@ int main(void) {
   prctl (PR_SET_DUMPABLE, 0, 0, 0, 0);
   
  
-  
   create_all_parametres(all_parametres);
   //control
   Set_data *data = malloc(sizeof(Set_data));
-  create_set_data();
+  create_set_data();/*renommer la fonction*/
   //load parametres
   get_stb_identification_parametres(all_parametres);
   get_conditional_access_parametres(all_parametres);
@@ -404,7 +428,7 @@ int main(void) {
   
   //init server
   mg_mgr_init(&mgr, NULL);
-  printf("Starting web server on port %s\n", s_http_port);
+  printf("[ConDiag][%s]Starting web server on port %s\n",__FUNCTION__, s_http_port);
 
   nc = mg_bind(&mgr, s_http_port, ev_handler);
   if (nc == NULL) {
