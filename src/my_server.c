@@ -1,10 +1,6 @@
 // Copyright (c) 2017 AZAIZ SLIM
 // All rights reserved
 #include <stdlib.h>
-#include "dbus/dbus.h"
-#include "sc_bus.h"
-#include "utils/utils.h"
-
 #include <unistd.h>
 #include <stdlib.h> 
 #include <sys/types.h>
@@ -12,16 +8,17 @@
 #include <grp.h>
 #include <linux/capability.h>
 #include <sys/prctl.h>
-#include "libcap.h"
 #include <assert.h>
+
+#include "dbus/dbus.h"
+#include "sc_bus.h"
+#include "utils/utils.h"
+#include "libcap.h"
 
 /**********************************************************************************
 *						              DEFINES
 **********************************************************************************/
-
 #define USER 	"diagnostic"
-//#define UID 1006
-//#define GID 1006
 /*-----------------------------------------------------------------------------
 					STATIC VARIABLES       
 -----------------------------------------------------------------------------*/
@@ -164,72 +161,76 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
   if (ev == MG_EV_HTTP_REQUEST) {
     //authentification
     if (strstr(mg_str2pTEXT(&hm->uri),"/authentificate")) {
-        Auth auth;
-        parseUsernamePassword(mg_str2pTEXT(&hm->uri),auth);
-        //printf("result = %d",authentificate(mg_str2pTEXT(&hm->uri)));
-      if(authentificate(auth)){
-         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-         printf("%s\nsuccess\n",mg_str2pTEXT(&hm->uri));
-         mg_printf_http_chunk(nc, "SUCCESS");
-         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-       } else {
-         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-         printf("%s\nERROR\n",mg_str2pTEXT(&hm->uri));
-         mg_printf_http_chunk(nc, "WRONG USERNAME OR PASSWORD");
-         mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-       }
-      // free(auth);
-    }
-    //resetPassword
-    else if (strstr(mg_str2pTEXT(&hm->uri),"/resetPassword")) {
-		char* username;
-		char* password;
-		
-        NewOldParameter *newOldParameter = malloc(sizeof(NewOldParameter));
-       // parseNewOldParameter(mg_str2pTEXT(&hm->uri),newOldParameter);
-        parseNewOldParameter(mg_str2pTEXT(&hm->uri),username,password);
-        if(!resetPassword(newOldParameter)){
+        char* username;
+        char* password;
+        parseUsernamePassword(mg_str2pTEXT(&hm->uri),&username,&password);
+        if(authentificate(username,password)){
             mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+            printf("%s\nsuccess\n",mg_str2pTEXT(&hm->uri));
             mg_printf_http_chunk(nc, "SUCCESS");
             mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+       } else {
+           mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+           printf("%s\nERROR\n",mg_str2pTEXT(&hm->uri));
+           mg_printf_http_chunk(nc, "WRONG USERNAME OR PASSWORD");
+           mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+       }
+        if (username != NULL)
+            free(username);
+        if (password != NULL)
+            free(password);
+    }
+   
+    //resetPassword
+    else if (strstr(mg_str2pTEXT(&hm->uri),"/resetPassword")) {
+		char* oldPassword;
+		char* newPassword;
+        parseNewOldParameter(mg_str2pTEXT(&hm->uri),&oldPassword,&newPassword);
+        if(!resetPassword(oldPassword,newPassword)){
+            mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+            mg_printf_http_chunk(nc, "SUCCESS");
+            mg_send_http_chunk(nc, "", 0);  
         } else {
             mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
             mg_printf_http_chunk(nc, "WRONG OLD PASSWORD");
-            mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+            mg_send_http_chunk(nc, "", 0);  
         }
-        if (username != NULL)
-        free(username)
-        if (password != NULL)
-        free(password)
-        free(newOldParameter);
+        if (oldPassword != NULL)
+            free(oldPassword);
+        if (newPassword != NULL)
+            free(newPassword);
     }
     //resetUsername
     else if (strstr(mg_str2pTEXT(&hm->uri),"/resetUsername")) {
-        NewOldParameter newOldParameter;
-        parseNewOldParameter(mg_str2pTEXT(&hm->uri),newOldParameter);
-        if(!resetUsername(newOldParameter)){ 
+		char* oldUsername;
+		char* newUsername;
+        parseNewOldParameter(mg_str2pTEXT(&hm->uri),&oldUsername,&newUsername);
+        if(!resetUsername(oldUsername,newUsername)){ 
             mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
             mg_printf_http_chunk(nc, "SUCCESS");
-            mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+            mg_send_http_chunk(nc, "", 0);  
         } else {
             mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
             mg_printf_http_chunk(nc, "WRONG OLD USERNAME");
-            mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+            mg_send_http_chunk(nc, "", 0);  
         }
-       // free(newOldParameter);
+        if (oldUsername != NULL)
+            free(oldUsername);
+        if (newUsername != NULL)
+            free(newUsername);
     }
     //control
     else if (strstr(mg_str2pTEXT(&hm->uri),"/control")) {
-        //char *controlKey = (char*) malloc(12*sizeof(char));
-        char *controlKey =  malloc(sizeof(char)*50);
-        parseCommand(mg_str2pTEXT(&hm->uri), controlKey);
+        char *controlKey;
+        parseCommand(mg_str2pTEXT(&hm->uri),&controlKey);
         //execute command
-        update_method_value(SET_IR_INPUT_ID, controlKey);
+        update_method_value(SET_IR_INPUT_ID,controlKey);
         //print message
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         printf("\n%s ",controlKey);
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-        free(controlKey);
+        mg_send_http_chunk(nc, "", 0);  
+        if (controlKey != NULL)
+            free(controlKey);
     } 
     //set parametres
     #if 0
@@ -250,7 +251,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
             char* result = cJSON_Print(root);
             mg_printf_http_chunk(nc, "{\"dataToSet\":%s}\n",result);
         
-            mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+            mg_send_http_chunk(nc, "", 0);  
        
         
         } 
@@ -269,7 +270,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         else {
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         mg_printf_http_chunk(nc, "WRONG PARAMETER");
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        mg_send_http_chunk(nc, "", 0);  
       }
         free(newOldParameter);
     }
@@ -278,71 +279,71 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
     else if (strstr(mg_str2pTEXT(&hm->uri),"diagnostic")) {
         //all parametres
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        mg_send_http_chunk(nc, "", 0);  
     }else if (strstr(mg_str2pTEXT(&hm->uri),"identification")) {
     // stb_identification      
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //get_stb_identification_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"identification\":%s}\n",json(10,0));
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        mg_send_http_chunk(nc, "", 0);  
     }else if (strstr(mg_str2pTEXT(&hm->uri),"conditionalAccess")) {
     //conditional_access
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //get_conditional_access_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"conditional\":%s}\n",json(2,10));
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        mg_send_http_chunk(nc, "", 0);  
     }else if (strstr(mg_str2pTEXT(&hm->uri),"memory")) {
     //memoire_data
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //get_memory_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"memory\":%s}\n",json(4,14));
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        mg_send_http_chunk(nc, "", 0);  
      }else if (strstr(mg_str2pTEXT(&hm->uri),"loader")) {
     //loader_data
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //get_loader_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"loader\":%s}\n",json(2,12));
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        mg_send_http_chunk(nc, "", 0);  
      }else if (strstr(mg_str2pTEXT(&hm->uri),"software")) {
     //software_data
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //get_software_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"software\":%s}\n",json(4,26));
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        mg_send_http_chunk(nc, "", 0);  
      }else if (strstr(mg_str2pTEXT(&hm->uri),"network")) {
     //network_data
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //get_network_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"network\":%s}\n",json(8,18));
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
+        mg_send_http_chunk(nc, "", 0);  
      }
     else if (strstr(mg_str2pTEXT(&hm->uri),"sysInfo")) {
     //sys_info 
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //get_sys_info_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"sysInfo\":%s}\n",json(13,30));
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
+        mg_send_http_chunk(nc, "", 0);          
     }
     else if (strstr(mg_str2pTEXT(&hm->uri),"nvmem")) {
     //nvmem 
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //get_nvmem_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"nvmem\":%s}\n",json(5,43));
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
+        mg_send_http_chunk(nc, "", 0);          
     }
     else if (strstr(mg_str2pTEXT(&hm->uri),"qamVirtualTunerStatus")) {
     //virtualTtuner 
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //get_virtual_tuner_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"qamVirtualTunerStatus\":%s}\n",json(6,48));
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
+        mg_send_http_chunk(nc, "", 0);          
     }
     else if (strstr(mg_str2pTEXT(&hm->uri),"qamTunerStatus")) {
      //tuner 
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
         //get_tuner_parametres(all_parametres);
         mg_printf_http_chunk(nc, "{\"qamTunerStatus\":%s}\n",json(18,54));
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */        
+        mg_send_http_chunk(nc, "", 0);          
     }
     else if (strstr(mg_str2pTEXT(&hm->uri),"realTime")) {
     // dynamic parametres
@@ -358,8 +359,8 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
         }
         char* result = cJSON_Print(root);
         mg_printf_http_chunk(nc, "{\"realTime\":%s}\n",result);
-        mg_send_http_chunk(nc, "", 0);  /* Send empty chunk, the end of response */
-      }        
+        mg_send_http_chunk(nc, "", 0);  
+      }       
        mg_serve_http(nc, (struct http_message *) p, s_http_server_opts);
   }
 }

@@ -12,12 +12,12 @@
                    uri:In
                    
  **********************************************************************/
-int parseCommand(char* uri,char* control_key){
+int parseCommand(char* uri,char** control_key){
     char* search = "/";
     char* str = "";
     str = strtok(uri,search);
     str = strtok(NULL,search);
-    control_key = str;
+    *control_key =strdup(str);
     return 0;
 }
 
@@ -32,16 +32,18 @@ int parseCommand(char* uri,char* control_key){
                    uri:In
                    
  **********************************************************************/
-void parseUsernamePassword(char* uri,Auth *auth){
+void parseUsernamePassword(char* uri,char** username, char** password){
     char* search = "/";
     char* str = "";
     str = strtok(uri,search);
     str = strtok(NULL,search);
-    auth->username = str;
+    *username = strdup(str);
     str = strtok(NULL,search);
-    auth->password = str;
-    printf("user = %s\n",auth->username);
-    printf("pass = %s\n",auth->password);
+    *password = strdup(str);
+    printf("user = %s\n",username);
+    printf("pass = %s\n",password);
+    printf("L.User=%d\n",strlen(username));
+    printf("L.Pass=%d\n",strlen(password));
 }
 /***********************************************************************
  *                     *** Copyright (C) 2017 SAGEMCOM SA ***
@@ -54,16 +56,16 @@ void parseUsernamePassword(char* uri,Auth *auth){
                    uri:In
                    
  **********************************************************************/
-void parseNewOldParameter(char* uri,NewOldParameter *newOldParameter){
+void parseNewOldParameter(char* uri,char** oldParameter,char** newParameter){
     char* search = "/";
     char* str = "";
     str = strtok(uri,search);
     str = strtok(NULL,search);
-    newOldParameter->oldParameter = str;
+    *oldParameter = strdup(str);
     str = strtok(NULL,search);
-    newOldParameter->newParameter = str;
-    printf("oldParameter = %s\n",newOldParameter->oldParameter);
-    printf("newParameter = %s\n",newOldParameter->newParameter);
+    *newParameter = strdup(str);
+    printf("oldParameter = %s\n",oldParameter);
+    printf("newParameter = %s\n",newParameter);
 }
 /***********************************************************************
  *                     *** Copyright (C) 2017 SAGEMCOM SA ***
@@ -75,7 +77,7 @@ void parseNewOldParameter(char* uri,NewOldParameter *newOldParameter){
  * Argument      : auth: Out
                    
  **********************************************************************/
-int getUsernamePassword(Auth* auth){
+int getUsernamePassword(char** username, char** password){
   FILE * ptrFileUsername;
   FILE * ptrFilePassword;
   char line_user[256];
@@ -92,8 +94,8 @@ int getUsernamePassword(Auth* auth){
   {
       if (cur_line_pass == 0) {
            line_pass[strlen(line_pass)-1] = '\0';
-           auth->password = line_pass;
-           printf("\nfinal_Pass=%s\n", auth->password);
+           *password = strdup(line_pass);
+           printf("\nfinal_Pass=%s\n", password);
            break;
       }
       cur_line_pass++;
@@ -104,15 +106,15 @@ int getUsernamePassword(Auth* auth){
   {
       if (cur_line_user == 0) {
            line_user[strlen(line_user)-1] = '\0';
-           auth->username = line_user;
-           printf("final_User=%s\n", auth->username);
+           *username =strdup(line_user);
+           printf("final_User=%s\n", username);
            break;
       }
       cur_line_user++;
   }
   
-  printf("L.finalUser=%d\n",strlen(auth->username));
-  printf("L.finalPass=%d\n",strlen(auth->password));
+  printf("L.finalUser=%d\n",strlen(username));
+  printf("L.finalPass=%d\n",strlen(password));
   fclose(ptrFilePassword);
   return 0 ;
     
@@ -128,13 +130,23 @@ int getUsernamePassword(Auth* auth){
  * Argument      : auth: Out
                    
  **********************************************************************/
-int authentificate(Auth* auth){
-    Auth* finalAuth = malloc(sizeof(Auth));
-    getUsernamePassword(finalAuth);
-    if((strcmp(auth->username,finalAuth->username)) || (strcmp(auth->password,finalAuth->password))){
+int authentificate(char* username, char* password){
+    char* finalUsername;
+    char* finalPassword;
+    getUsernamePassword(&finalUsername,&finalPassword);
+    printf("finalUsername = %s\n",finalUsername);
+    printf("finalPassword = %s\n",finalPassword);
+    printf("Password = %s\n",password);
+    printf("Username = %s\n",username);
+    if((strcmp(username,finalUsername)) || (strcmp(password,finalPassword))){
+        free(finalUsername);
+        free(finalPassword);
         return 0 ;
-    } else
+    } else{
+        free(finalUsername);
+        free(finalPassword);
         return -1;
+    }
 }
 
 /***********************************************************************
@@ -147,19 +159,22 @@ int authentificate(Auth* auth){
  * Argument      : newOldPassword: Out
                    
  **********************************************************************/
-int resetPassword(NewOldParameter* newOldPassword){
-    Auth* finalAuth = malloc(sizeof(Auth));
-    getUsernamePassword(finalAuth);
+int resetPassword(char* oldPass,char* newPass){
+    char* finalUsername;
+    char* finalPassword;
+    getUsernamePassword(&finalUsername,&finalPassword);
  
-    if((!strcmp(newOldPassword->oldParameter,finalAuth->password))){
+    if((!strcmp(oldPass,finalPassword))){
         FILE * ptrw;
         ptrw=fopen(PASS_PATH,"w+");
-        fprintf(ptrw,"%s\n\r",newOldPassword->newParameter);
+        fprintf(ptrw,"%s\n\r",oldPass);
         fclose(ptrw);
-        free(finalAuth);
+        free(finalUsername);
+        free(finalPassword);
         return 0 ;
     } else{
-        free(finalAuth);
+        free(finalUsername);
+        free(finalPassword);
         printf("ERROR\n");
         return -1;
     }
@@ -174,19 +189,22 @@ int resetPassword(NewOldParameter* newOldPassword){
  * Argument      : newOldUsername: Out
                    
  **********************************************************************/
-int resetUsername(NewOldParameter* newOldUsername){
-    Auth* finalAuth = malloc(sizeof(Auth));
-    getUsernamePassword(finalAuth);
-    if((!strcmp(newOldUsername->oldParameter,finalAuth->username))){
+int resetUsername(char* oldUser,char* newUser){
+    char* finalUsername;
+    char* finalPassword;
+    getUsernamePassword(&finalUsername,&finalPassword);
+    if((!strcmp(oldUser,finalUsername))){
         FILE * ptrw;
         ptrw=fopen(USER_PATH,"w+");
-        fprintf(ptrw,"%s\n\r",newOldUsername->newParameter);
+        fprintf(ptrw,"%s\n\r",newUser);
         fclose(ptrw);
-        free(finalAuth);
+        free(finalUsername);
+        free(finalPassword);
         return 0 ;
     } else{
         printf("ERROR\n");
-        free(finalAuth);
+        free(finalUsername);
+        free(finalPassword);
         return -1;
     }
 }

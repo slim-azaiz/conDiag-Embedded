@@ -9,16 +9,50 @@ void create_all_parametres(All_parametres* all_parametres)
     Get_data *data = malloc(sizeof(Get_data));
     create_get_data();
     //stb identification   
-	all_parametres->members[0][1]= "serial number" ;
-	all_parametres->members[1][1]= "Nagra serial number" ;
-	all_parametres->members[2][1]= "Model" ;
-	all_parametres->members[3][1]="STB mac address" ;
-	all_parametres->members[4][1]="Ethernet mac address" ;
-	all_parametres->members[5][1]="Firmware version" ;
-	all_parametres->members[6][1]="STB manufacturing date" ;
-	all_parametres->members[7][1]="Hardware version";
-	all_parametres->members[8][1]="NETWORK_ID" ;
-	all_parametres->members[9][1]="Manufacturer" ;	
+	all_parametres->members[0][1]=  ;
+	all_parametres->members[1][1]=  ;
+	all_parametres->members[2][1]=  ;
+	all_parametres->members[3][1]= ;
+	all_parametres->members[4][1]= ;
+	all_parametres->members[5][1]= ;
+	all_parametres->members[6][1]= ;
+	all_parametres->members[7][1]=;
+	all_parametres->members[8][1]= ;
+	all_parametres->members[9][1]= ;	
+
+    
+char* jsonIdentification(){
+    int i = 0;
+    cJSON *objects[1];
+    cJSON *root = cJSON_CreateArray();
+    for (int j = 0; j < NUMBER_IDETIFICATION_PARAMETRES; j++){
+        cJSON_AddItemToArray(root ,objects[i] = cJSON_CreateObject()); 
+    }
+    cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array(SERIAL_NUMBER,30));
+    cJSON_AddStringToObject(objects[i], "parameter","serial number");i++;    
+    cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array(SERIAL_NUMBER,30));
+    cJSON_AddStringToObject(objects[i], "parameter","Nagra serial number");i++;    
+    cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array(SERIAL_NUMBER,30));
+    cJSON_AddStringToObject(objects[i], "parameter","Model");i++;    
+    cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array(SERIAL_NUMBER,30));
+    cJSON_AddStringToObject(objects[i], "parameter","STB mac address");i++;    
+    cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array(SERIAL_NUMBER,30));
+    cJSON_AddStringToObject(objects[i], "parameter","Ethernet mac address");i++;    
+    cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array(SERIAL_NUMBER,30));
+    cJSON_AddStringToObject(objects[i], "parameter","Firmware version");i++;    
+    cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array(SERIAL_NUMBER,30));
+    cJSON_AddStringToObject(objects[i], "parameter","STB manufacturing date");i++;    
+    cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array(SERIAL_NUMBER,30));
+    cJSON_AddStringToObject(objects[i], "parameter","Hardware version";i++;    
+    cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array(SERIAL_NUMBER,30));
+    cJSON_AddStringToObject(objects[i], "parameter","Manufacturer");i++;    
+    
+    cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array(SERIAL_NUMBER,30));
+    cJSON_AddStringToObject(objects[i], "parameter","serial number");i++;    
+    
+    return cJSON_Print(root);
+}
+    
     //conditional access
     all_parametres->members[10][1]="Nagra Serial Number" ;
     all_parametres->members[11][1]="CA Provider Name" ;
