@@ -1,6 +1,6 @@
 #include "data/set_data.h"
 
-void create_set_data()
+void init_sc_bus()
 {	 
 	if (sc_bus_init(SC_BUS_THREADED_IOLOOP, SC_BUS_TRACE_LEVEL_WARNING, NULL) < 0)
     {
@@ -13,7 +13,7 @@ void create_set_data()
     }
 }
 
-void destroy_set_data()
+void deinit_sc_bus()
 {
 	sc_bus_undeclare_name(DIAGNOSTIC_MENU_DBUS_SERVICE_DBUS);
 	sc_bus_exit();

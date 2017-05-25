@@ -133,20 +133,26 @@ int getUsernamePassword(char** username, char** password){
 int authentificate(char* username, char* password){
     char* finalUsername;
     char* finalPassword;
-    getUsernamePassword(&finalUsername,&finalPassword);
+    int result = RESULT_SUCCESS;
+
+    result = getUsernamePassword(&finalUsername,&finalPassword);
+    
+    if (result != RESULT_SUCCESS)
+		return result;
+
     printf("finalUsername = %s\n",finalUsername);
     printf("finalPassword = %s\n",finalPassword);
     printf("Password = %s\n",password);
     printf("Username = %s\n",username);
-    if((strcmp(username,finalUsername)) || (strcmp(password,finalPassword))){
-        free(finalUsername);
-        free(finalPassword);
-        return 0 ;
-    } else{
-        free(finalUsername);
-        free(finalPassword);
-        return -1;
+	
+	result = RESULT_ERROR;
+
+    if((strcmp(username,finalUsername) == 0) && (strcmp(password,finalPassword) == 0)){
+        result = RESULT_SUCCESS ;
     }
+    free(finalUsername);
+    free(finalPassword);
+    return result;
 }
 
 /***********************************************************************

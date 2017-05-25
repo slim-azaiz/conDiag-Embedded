@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include "dbus/dbus.h"
 #include "sc_bus.h"
-#include "data/dynamic_parametres.h"
 #include "data/set_data.h"
 #include "mongoose/mongoose.h"
 #include "cjson/cJSON.h"
@@ -21,6 +20,9 @@
 #define MAX_USERNAME_PASSWORD_LENGTH        20
 #define RESULT_SUCCESS						0
 #define RESULT_ERROR						(-1)
+
+#define IR_INPUT_PROTOCOL_NEC				1
+#define IR_INPUT_PROTOCOL_RCMM				2
 /**********************************************************************************
 *						              STRUCTURES
 **********************************************************************************/

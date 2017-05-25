@@ -1,23 +1,5 @@
 #include "data/get_data.h"
 
-void create_get_data()
-{	 
-	if (sc_bus_init(SC_BUS_THREADED_IOLOOP, SC_BUS_TRACE_LEVEL_WARNING, NULL) < 0)
-    {
-        printf( "ERROR sc_bus_init"  );
-    }
-
-    if (sc_bus_declare_name(DIAGNOSTIC_MENU_DBUS_SERVICE_DBUS) < 0)
-    {
-        printf(  "ERROR sc_bus_declare_name"  );
-    }
-}
-
-void destroy_get_data()
-{
-	sc_bus_undeclare_name(DIAGNOSTIC_MENU_DBUS_SERVICE_DBUS);
-	sc_bus_exit();
-}
 
 void set_method(Get_data *get_data,char* mtd)
 {
@@ -97,7 +79,9 @@ char* get_method_value_by_array(char* method,int length)
 	}
 	return "";
 }
- int hex_to_int(char c){ 
+
+
+int hex_to_int(char c){ 
          int first = c / 16 - 3; 
          int second = c % 16; 
          int result = first*10 + second; 

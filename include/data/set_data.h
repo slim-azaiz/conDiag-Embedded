@@ -37,8 +37,8 @@ typedef struct Set_data
 
  
  
-void create_set_data();
-void destroy_set_data();
+void init_sc_bus();
+void deinit_sc_bus();
 void set_method_value(Set_data *data, char* method, char* val);
 int update_method_value();
 #endif //SET_DATA_H
