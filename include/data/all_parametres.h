@@ -11,6 +11,8 @@
 #define MODULATION_QAM_64		"64"
 #define MODULATION_QAM_128		"128"
 #define MODULATION_QAM_256		"256"
+#define PARAMETER		        "parameter"
+#define VALUE   		        "value"
 
 #define SIZE_IDENTIFICATION       10
 #define SIZE_LOADER               2
@@ -26,6 +28,8 @@
 #define SIZE_SYSINFO_REAL_TIME              3
 #define SIZE_MEMORY               4
 #define SIZE_MEMORY_REAL_TIME               1
+#define RESULT_SUCCESS						0
+#define RESULT_ERROR						(-1)
 
 
 

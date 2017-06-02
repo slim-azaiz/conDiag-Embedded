@@ -3,7 +3,7 @@
 
 //identification
 int json_stb_identification(char** result){
-    char* stb_identification_parameter[SIZE_IDENTIFICATION] = {"SERIAL_NUMBER","NAGRA_SERIAL_NUMBER","MODEL","STB_MAC_ADDRESS","ETHERNET_MAC_ADDRESS","FIRMWARE_VERSION","STB_MANUFACTURING_DATE","HARDWARE_VERSION","NETWORK_ID","MANUFACTURER"};
+    char* stb_identification_parameter[SIZE_IDENTIFICATION] = {"SERIAL NUMBER","NAGRA SERIAL_NUMBER","MODEL","STB MAC ADDRESS","ETHERNET MAC ADDRESS","FIRMWARE VERSION","STB MANUFACTURING_DATE","HARDWARE VERSION","NETWORK_ID","MANUFACTURER"};
     char* stb_identification_value[SIZE_IDENTIFICATION] = {SERIAL_NUMBER,NAGRA_SERIAL_NUMBER,MODEL,STB_MAC_ADDRESS,ETHERNET_MAC_ADDRESS,FIRMWARE_VERSION,STB_MANUFACTURING_DATE,HARDWARE_VERSION,NETWORK_ID,MANUFACTURER};
     cJSON *objects[1];
     int i;
@@ -14,7 +14,7 @@ int json_stb_identification(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(stb_identification_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
 //conditional_access    
 int json_conditional_access(char** result){
@@ -30,7 +30,7 @@ int json_conditional_access(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(conditional_access_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     
     //loader data
@@ -47,7 +47,7 @@ int json_loader(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(loader_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     
     //memoire data
@@ -64,7 +64,7 @@ int json_memory(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(memory_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     //memoire real_time
 int json_memory_real_time(char** result){
@@ -80,12 +80,12 @@ int json_memory_real_time(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(memory_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     //network data
 int json_network(char** result){
-    char* network_parameter[SIZE_NETWORK] = {"STB serial number","STB subnet mask","STB ip default_gateway","STB mac address","dns serverII","STB_ethernet_Port_Status","STB mac ethernet","STB ip address"};
-    char* network_value[SIZE_NETWORK] = {SERIAL_NUMBER,STB_SUBNET_MASK,STB_IP_DEFAULT_GATEWAY,STB_MAC_ADDRESS,DNS_SERVER_II,STB_ETHERNET_PORT_STATUS, ETHERNET_MAC_ADDRESS, STB_IP_ADDRESS};
+    char* network_parameter[SIZE_NETWORK] = {"STB serial number","STB subnet mask","STB ip default_gateway","STB mac address","STB_ethernet_Port_Status","STB mac ethernet","STB ip address","dns serverII"};
+    char* network_value[SIZE_NETWORK] = {SERIAL_NUMBER,STB_SUBNET_MASK,STB_IP_DEFAULT_GATEWAY,STB_MAC_ADDRESS,STB_ETHERNET_PORT_STATUS, ETHERNET_MAC_ADDRESS, STB_IP_ADDRESS,DNS_SERVER_II};
     
     cJSON *objects[1];
     int i;
@@ -96,7 +96,7 @@ int json_network(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(network_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     //network_realtime
 int json_network_real_time(char** result){
@@ -112,7 +112,7 @@ int json_network_real_time(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(network_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     //software data
 int json_software(char** result){
@@ -128,7 +128,7 @@ int json_software(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(software_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     //software real time
 int json_software_real_time(char** result){
@@ -144,23 +144,23 @@ int json_software_real_time(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(software_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     //sys_info
 int json_sys_info(char** result){
-    char* sys_info_parameter[SIZE_SYSINFO] = {"IR Input Status","Internal_Temperature","CPU_Utilisation","HDMI_port_Status","Video Resolution","Video Aspect_Ratio","Video Format","Diagnostics Pages Language","Audio Setup","STB Lifetime","STB total Power Off","Time since last STB boot up","Total STB Reboot"};
-    char* sys_info_value[SIZE_SYSINFO] = { IR_INPUT_STATUS,INTERNAL_TEMPERATURE,CPU_UTILISATION,HDMI_PORT_STATUS,VIDEO_RESOLUTION,VIDEO_ASPECT_RATIO,VIDEO_FORMAT,DIAGNOSTICS_PAGES_LANGUAGE,AUDIO_SETUP,STB_LIFE_TIME,TOTAL_STB_POWER_OFF,TIME_SINCE_LAST_STB_BOOT_UP,TOTAL_STB_REBOOT};
+    char* sys_info_parameter[SIZE_SYSINFO] = {"IR Input Status","Internal_Temperature","CPU_Utilisation","HDMI_port_Status","STB Lifetime","STB total Power Off","Time since last STB boot up","Total STB Reboot","Video Resolution","Video Aspect_Ratio","Video Format","Diagnostics Pages Language","Audio Setup"};
+    char* sys_info_value[SIZE_SYSINFO] = { IR_INPUT_STATUS,INTERNAL_TEMPERATURE,CPU_UTILISATION,HDMI_PORT_STATUS,VIDEO_RESOLUTION,STB_LIFE_TIME,TOTAL_STB_POWER_OFF,TIME_SINCE_LAST_STB_BOOT_UP,TOTAL_STB_REBOOT,VIDEO_ASPECT_RATIO,VIDEO_FORMAT,DIAGNOSTICS_PAGES_LANGUAGE,AUDIO_SETUP};
     
     cJSON *objects[1];
     int i;
     cJSON *root = cJSON_CreateArray();
     for (i = 0; i < SIZE_SYSINFO; i++){
         cJSON_AddItemToArray(root ,objects[i] = cJSON_CreateObject()); 
-        cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array((sys_info_value)[i],30));
-        cJSON_AddStringToObject(objects[i], "parameter",(sys_info_parameter)[i]);    
+        cJSON_AddStringToObject(objects[i], VALUE,get_method_value_by_array((sys_info_value)[i],30));
+        cJSON_AddStringToObject(objects[i], PARAMETER,(sys_info_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     //sys_info_real_time
 int json_sys_info_real_time(char** result){
@@ -176,7 +176,7 @@ int json_sys_info_real_time(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(sys_info_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     //nvmem
 int json_nvmem(char** result){
@@ -221,7 +221,7 @@ int json_nvmem(char** result){
             cJSON_AddStringToObject(objects[i], "value",get_method_value_by_array((nvmem_value)[i],30));
         }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     //virtual_tuner
 int json_virtual_tuner(char** result){
@@ -237,7 +237,7 @@ int json_virtual_tuner(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(virtual_tuner_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }
     //tuner
 int json_tuner(char** result){
@@ -254,5 +254,5 @@ int json_tuner(char** result){
         cJSON_AddStringToObject(objects[i], "parameter",(tuner_parameter)[i]);    
     }
     *result = strdup(cJSON_Print(root)) ;
-    return 0;
+    return RESULT_SUCCESS;
 }

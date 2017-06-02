@@ -258,11 +258,11 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
     else if (strstr(mg_str2pTEXT(&hm->uri),"diagnostic")) {
         //all parametres
         mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+        mg_printf_http_chunk(nc, "{\"diagnostic\":[] }\n");
         mg_send_http_chunk(nc, "", 0);  
     }else if (strstr(mg_str2pTEXT(&hm->uri),"realTime")) {
     // dynamic parametres
         char* interface;char* result_realtime;
-        cJSON *objects[1];
         parseCommand(mg_str2pTEXT(&hm->uri),&interface);
         if(!strcmp(interface,"memory")){
             json_memory_real_time(&result_realtime);
